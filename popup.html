@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 12px;
+      width: max-content;
+      background: #fff;
+      font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      border-radius: 24px; /* Attempt to round */
+      overflow: hidden;
+    }
+    /* Global Button Styles */
+    .qs-guide-btn {
+      text-align: center;
+      all: initial;
+      cursor: pointer;
+      background: #ff6a61;
+      color: #ffffff;
+      padding: 8px;
+      border-radius: 12px;
+      font-size: 0;
+      border: none;
+      outline: none;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      position: relative;
+    }
+    .qs-guide-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      transition: fill 0.2s ease;
+    }
+    .qs-guide-btn:hover {
+      box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.2);
+    }
+    .qs-guide-btn:active {
+      transform: scale(0.96);
+    }
+    /* Segmented Button Group */
+    .qs-segmented {
+      display: flex;
+      background: #ff6a61;
+      border-radius: 999px;
+      padding: 2px 6px 2px 2px;
+      gap: 6px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      align-items: center;
+    }
+    .qs-segmented .qs-guide-btn {
+      background: transparent;
+      box-shadow: none !important;
+      width: 36px;
+      height: 36px;
+      transform: none !important;
+      border-radius: 999px;
+    }
+    /* Visible Area Button (Left) */
+    .qs-segmented .qs-guide-btn:first-child {
+      border-radius: 999px;
+      width: 44px;
+    }
+    /* Download Button (Right) */
+    .qs-segmented .qs-guide-btn:last-child {
+      border-radius: 50%;
+      background: #ffffff;
+      color: #ff6a61;
+      width: 28px;
+      height: 28px;
+    }
+    .qs-segmented .qs-guide-btn:last-child svg {
+      width: 18px;
+      height: 18px;
+    }
+    .qs-segmented .qs-guide-btn:last-child:hover {
+      box-shadow: inset 0 0 0 100px rgba(0, 0, 0, 0.05) !important;
+    }
+    .qs-segmented .qs-guide-btn:first-child:hover {
+      box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.2) !important;
+    }
+    /* Standalone Full Page Button */
+    .qs-guide-btn.full-page {
+      border-radius: 50% !important;
+    }
+    .separator {
+      width: 1px;
+      height: 24px;
+      background: #e0e0e0;
+      margin: 0 4px;
+      display: none; 
+    }
+    .label {
+      font-size: 14px;
+      color: #49454F;
+      font-weight: 500;
+      margin-right: 8px;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="qs-segmented">
+    <button class="qs-guide-btn" id="btn-visible" title="Select Area (Click for Visible)">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M185.09-105.87q-32.51 0-55.87-23.35-23.35-23.36-23.35-55.87v-589.82q0-32.74 23.35-56.26 23.36-23.53 55.87-23.53h589.82q32.74 0 56.26 23.53 23.53 23.52 23.53 56.26v366.34q-18.78-11.99-38.86-21.75-20.09-9.76-40.93-15.59v-165.05h-255.3v171.74q-34.35 12.7-63.76 32.98-29.42 20.29-54.59 48.11H185.09v173.04l149 2.26q11.13 22.09 23.89 41.11t27.15 35.85H185.09Zm0-332.04h255.3v-173.05h-255.3v173.05Zm0-252.26h589.82v-84.74H185.09v84.74ZM480-480Zm0 0Zm0 0Zm0 0ZM656.69-43.04q-91.43 0-167.26-48.68-75.82-48.67-111.39-132.63 35.57-83.39 111.39-132.06 75.83-48.68 167.79-48.68 91.95 0 167.71 48.75 75.75 48.75 112.03 132.49-34.13 84.46-111.17 132.63-77.03 48.18-169.1 48.18Zm.64-71.31q59.63 0 112.34-29.5 52.72-29.5 88.98-80.5-36.26-50.43-89.09-80.21-52.83-29.79-112.46-29.79-59.62 0-112.06 29.79-52.43 29.78-88.13 80.21 35.7 51 88.25 80.5t112.17 29.5Zm.12-55.48q-22.93 0-38.56-15.68-15.63-15.68-15.63-38.61 0-22.92 15.75-38.55 15.76-15.63 38.26-15.63 23.21 0 38.84 15.75 15.63 15.75 15.63 38.25 0 23.21-15.68 38.84-15.68 15.63-38.61 15.63Z"/></svg>
+    </button>
+    <button class="qs-guide-btn" id="btn-download" title="Capture and Download">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-318.09 266.65-531.44l57.13-56 116.61 116.61V-814.7h79.22v343.87l116.61-116.61 57.13 56L480-318.09ZM225.09-145.87q-32.51 0-55.87-23.35-23.35-23.36-23.35-55.87v-143h79.22v143h509.82v-143h79.79v143q0 32.48-23.53 55.85-23.52 23.37-56.26 23.37H225.09Z"/></svg>
+    </button>
+  </div>
+  <button class="qs-guide-btn full-page" id="btn-full" title="Full Page">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M67-743.87V-933h189.13v73H140v116.13H67Zm753 0V-860H703.87v-73H893v189.13h-73ZM67-27v-189.13h73V-100h116.13v73H67Zm636.87 0v-73H820v-116.13h73V-27H703.87ZM273-233h414v-494H273v494Zm0 79.22q-31.38 0-55.3-23.92-23.92-23.92-23.92-55.3v-494q0-31.38 23.92-55.3 23.92-23.92 55.3-23.92h414q31.38 0 55.3 23.92 23.92 23.92 23.92 55.3v494q0 31.38-23.92 55.3-23.92 23.92-55.3 23.92H273Zm94.74-413.96h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09ZM273-233v-494 494Z"/></svg>
+  </button>
+  <script src="popup.js"></script>
+</body>
+</html>

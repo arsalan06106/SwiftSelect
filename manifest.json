@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "SwiftSelect - Instantly Copy or Download Any Area or Entire Page",
+  "version": "1.4.0",
+  "description": "Click icon → drag to select → copied to clipboard.",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "tabs",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "SwiftSelect",
+    "default_icon": {
+      "16": "icons/icon48.png",
+      "32": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "commands": {
+    "activate-selection": {
+      "suggested_key": {
+        "default": "Alt+S"
+      },
+      "description": "Activate selection mode"
+    }
+  }
+}
