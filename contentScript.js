@@ -1,4 +1,4 @@
-// contentScript.js - Google Material Expressive Design 2025 - Final Version
+// contentScript.js - Restored UI with Material 3 Expressive Motion
 (() => {
   if (window.__qsInjected) return;
   window.__qsInjected = true;
@@ -32,9 +32,9 @@
       font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
       font-weight: 500;
       font-size: 26px;
-      background: #ffebe9;
+      background: #ffebe9; /* Original Background */
       border: none;
-      border-radius: 999px; /* Fully round */
+      border-radius: 999px; /* Original Shape */
       box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
       pointer-events: auto;
       z-index: 2147483648;
@@ -46,20 +46,22 @@
       right: 24px;
       padding: 12px;
       position: fixed;
-      animation: materialEnter 0.3s cubic-bezier(0.2, 0, 0, 1);
       min-width: auto;
       max-width: 500px;
+      
+      /* Expressive Motion - Entrance */
+      transform-origin: top center;
+      animation: expressiveExpand 500ms cubic-bezier(0.2, 0.0, 0.0, 1.0) forwards;
+      opacity: 0; /* Star invisible */
     }
+
+    /* Expressive Motion - Exit */
+    .qs-guide.qs-hiding {
+      animation: expressiveCollapse 300ms cubic-bezier(0.3, 0.0, 0.8, 0.15) forwards !important;
+    }
+
     .qs-guide-header {
       display: none;
-    }
-    .qs-guide-text {
-      color: #49454F;
-      font-size: 16px;
-      line-height: 1.4;
-      white-space: nowrap;
-      margin-right: 8px;
-      margin-left: 8px; /* Balanced margin */
     }
     .qs-guide-buttons {
       display: flex;
@@ -75,13 +77,12 @@
       color: #ffffff;
       padding: 0 20px;
       border-radius: 999px;
-      border-radius: 999px;
       font-size: 16px;
       font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
       font-weight: 500;
       border: none;
       outline: none;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -98,7 +99,6 @@
       transition: all 0.3s ease;
     }
     .qs-guide-btn:hover {
-      /* Lighten on hover using overlay logic */
       box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.2);
     }
     .qs-guide-btn:active {
@@ -122,8 +122,6 @@
     .qs-segmented .qs-guide-btn {
       background: transparent;
       box-shadow: none !important;
-      background: transparent;
-      box-shadow: none !important;
       height: 48px;
       transform: none !important;
       border-radius: 999px;
@@ -138,7 +136,6 @@
     .qs-segmented .qs-guide-btn:last-child {
       border-radius: 50%;
       background: #ffffff;
-      color: #ff6a61;
       color: #ff6a61;
       width: 48px;
       height: 48px;
@@ -206,6 +203,7 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
+    
     /* ... status styles ... */
     .qs-status {
       left: 50%;
@@ -213,7 +211,6 @@
       transform: translate(-50%, 0);
       padding: 12px 24px;
       position: fixed;
-      animation: slideUp 0.3s cubic-bezier(0.2, 0, 0, 1);
       color: #1C1B1F;
       font-family: 'Google Sans', system-ui, sans-serif;
       font-weight: 500;
@@ -229,14 +226,23 @@
       gap: 16px;
       max-width: 90vw;
       min-height: 56px;
+      
+      /* Expressive Entrance for Toast */
+      opacity: 0;
+      animation: expressiveSlideUp 500ms cubic-bezier(0.2, 0.0, 0.0, 1.0) forwards;
     }
+
+    .qs-status.qs-hiding {
+      animation: expressiveSlideDown 300ms cubic-bezier(0.3, 0.0, 0.8, 0.15) forwards !important;
+    }
+
     .qs-status.no-anim {
       animation: none !important;
       transition: none !important;
       opacity: 1 !important;
       transform: translate(-50%, 0) !important;
     }
-    /* ... existing status styles ... */
+
     .qs-status.qs-success {
       pointer-events: auto;
       background: #D1E7DD;
@@ -289,7 +295,6 @@
       font-weight: 600;
       flex-shrink: 0;
     }
-    /* ... rest of existing CSS ... */
     .qs-status.qs-success .qs-status-icon {
       background: #198754;
     }
@@ -313,28 +318,59 @@
     }
     .qs-status-icon::after {
       content: "i";
-      font-size: 12px; /* Reduced font size */
+      font-size: 12px;
     }
-    @keyframes materialEnter {
-      from { 
-        transform: translateY(-20px) scale(0.9);
+    
+    /* NEW EXPRESSIVE KEYFRAMES */
+    
+    /* Expand from a slightly smaller scale + subtle Y offset */
+    @keyframes expressiveExpand {
+      0% { 
+        transform: translateY(-20px) scale(0.8);
         opacity: 0;
       }
-      to { 
+      100% { 
         transform: translateY(0) scale(1);
         opacity: 1;
       }
     }
-    @keyframes slideUp {
-      from { 
-        transform: translate(-50%, 20px) scale(0.9);
+
+    /* Collapse simply and quickly */
+    @keyframes expressiveCollapse {
+      0% { 
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% { 
+        transform: translateY(-10px) scale(0.9);
         opacity: 0;
       }
-      to { 
+    }
+
+    /* Slide Up for Toast - Crisp */
+    @keyframes expressiveSlideUp {
+      0% { 
+        transform: translate(-50%, 20px) scale(0.95);
+        opacity: 0;
+      }
+      100% { 
         transform: translate(-50%, 0) scale(1);
         opacity: 1;
       }
     }
+
+    /* Slide Down Exit */
+    @keyframes expressiveSlideDown {
+      0% { 
+        transform: translate(-50%, 0) scale(1);
+        opacity: 1;
+      }
+      100% { 
+        transform: translate(-50%, 15px) scale(0.95);
+        opacity: 0;
+      }
+    }
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -459,8 +495,13 @@
       fullBtn.onclick = handleCaptureFullPage;
     }
     
-    // Ensure guide is visible
-    if (guideHost) guideHost.style.display = "flex";
+    // Ensure guide is visible AND RESET ANIMATION CLASS
+    if (guideHost) {
+      guideHost.style.display = "flex";
+      guideEl.classList.remove("qs-hiding");
+      // Force Reflow to restart enter animation if needed
+      void guideEl.offsetWidth;
+    }
   }
 
   // ... cleanup ...
@@ -481,6 +522,7 @@
 
     // Reset classes
     statusEl.className = "qs-status";
+    statusEl.classList.remove("qs-hiding");
     if (noAnim) statusEl.classList.add("no-anim");
     
     statusEl.innerHTML = "";
@@ -511,28 +553,20 @@
     statusHost.style.display = "";
     statusEl.style.display = "flex";
     
-    if (!noAnim) {
-      statusEl.style.opacity = "0";
-      statusEl.style.transform = "translate(-50%, 30px)";
-      statusEl.offsetHeight; // Force reflow
-      statusEl.style.opacity = "1";
-      statusEl.style.transform = "translate(-50%, 0)";
-    } else {
-      statusEl.style.opacity = "1";
-      statusEl.style.transform = "translate(-50%, 0)";
-    }
-
     currentStatus = type;
 
     if (timeout > 0) {
       hideStatusTimer = setTimeout(() => {
-        statusEl.style.opacity = "0";
-        statusEl.style.transform = "translate(-50%, -30px)";
+        // Trigger Exit Animation
+        statusEl.classList.add("qs-hiding");
         setTimeout(() => {
-          statusEl.style.display = "none";
-          statusHost.style.display = "none";
-          currentStatus = null;
-        }, 500);
+          if (statusEl.classList.contains("qs-hiding")) {
+             statusEl.style.display = "none";
+             statusHost.style.display = "none";
+             statusEl.classList.remove("qs-hiding");
+             currentStatus = null;
+          }
+        }, 300); // 300ms matches animation duration
       }, timeout);
     }
   }
@@ -545,8 +579,19 @@
     boxHost = null; box = null;
     if (overlayHost && overlayHost.parentNode) overlayHost.parentNode.removeChild(overlayHost);
     overlayHost = null; overlay = null;
-    if (guideHost && guideHost.parentNode) guideHost.parentNode.removeChild(guideHost);
-    guideHost = null; guideEl = null; guideShadow = null;
+    
+    // Animate guide out
+    if (guideEl && guideHost) {
+        guideEl.classList.add("qs-hiding");
+        setTimeout(() => {
+            if (guideHost && guideHost.parentNode) guideHost.parentNode.removeChild(guideHost);
+            guideHost = null; guideEl = null; guideShadow = null;
+        }, 300);
+    } else {
+        if (guideHost && guideHost.parentNode) guideHost.parentNode.removeChild(guideHost);
+        guideHost = null; guideEl = null; guideShadow = null;
+    }
+    
     removeListeners();
   }
 
@@ -606,14 +651,13 @@
     if (hideStatusTimer) clearTimeout(hideStatusTimer);
     hideStatusTimer = setTimeout(() => {
       if (statusEl) {
-        statusEl.style.transition = "all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)";
-        statusEl.style.opacity = "0";
-        statusEl.style.transform = "translate(-50%, -30px) scale(0.9)";
+        statusEl.classList.add("qs-hiding");
         setTimeout(() => {
           statusEl.style.display = "none";
           statusHost.style.display = "none";
+          statusEl.classList.remove("qs-hiding");
           currentStatus = null;
-        }, 500);
+        }, 300);
       }
     }, 2500);
   }
@@ -859,9 +903,12 @@
       const btn = guideShadow?.querySelector('[data-action="capture-full"]');
       if (btn) {
         btn.classList.remove("qs-loading");
+        btn.classList.remove("qs-success");
         // Clean up progress span if it exists
         const span = btn.querySelector(".qs-progress-text");
         if (span) span.remove();
+        
+        if (originalIcon) btn.innerHTML = originalIcon;
       }
       setStatus("Capture failed", 3000, "error");
       if (guideHost) guideHost.style.display = "flex"; // Ensure visible on error
@@ -911,8 +958,13 @@
     updateBox();
   }
 
-  function onMouseUp() {
+  function onMouseUp(e) {
     if (!dragging) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
     dragging = false;
     updateBox();
 
@@ -986,11 +1038,42 @@
     document.addEventListener("keydown", onKeyDown, true);
   }
 
+  function stopProp(e) {
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+  }
+
+  function preventAll(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+  }
+
+  function addListeners() {
+    document.addEventListener("mousedown", onMouseDown, true);
+    document.addEventListener("mousemove", onMouseMove, true);
+    document.addEventListener("mouseup", onMouseUp, true);
+    document.addEventListener("keydown", onKeyDown, true);
+    
+    // Block other events from reaching the page
+    document.addEventListener("pointerdown", stopProp, true);
+    document.addEventListener("pointerup", stopProp, true);
+    document.addEventListener("click", preventAll, true);
+    document.addEventListener("dblclick", preventAll, true);
+    document.addEventListener("contextmenu", preventAll, true);
+  }
+
   function removeListeners() {
     document.removeEventListener("mousedown", onMouseDown, true);
     document.removeEventListener("mousemove", onMouseMove, true);
     document.removeEventListener("mouseup", onMouseUp, true);
     document.removeEventListener("keydown", onKeyDown, true);
+    
+    document.removeEventListener("pointerdown", stopProp, true);
+    document.removeEventListener("pointerup", stopProp, true);
+    document.removeEventListener("click", preventAll, true);
+    document.removeEventListener("dblclick", preventAll, true);
+    document.removeEventListener("contextmenu", preventAll, true);
   }
 
   function nextPaint() {
@@ -1033,10 +1116,6 @@
   function updateBadge(text, color = "#ff6a61") {
     chrome.runtime.sendMessage({ type: "update-badge", text, color });
   }
-
-
-
-
 
   // Initialize
 })();

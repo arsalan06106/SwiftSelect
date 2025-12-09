@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "SwiftSelect - Instantly Copy or Download Any Area or Entire Page",
-  "version": "1.4.0",
-  "description": "Click icon → drag to select → copied to clipboard.",
+  "name": "SwiftSelect - Capture, Copy & Download Screenshots",
+  "version": "1.4.1",
+  "description": "The all-in-one tool to snap, scroll-capture, copy and download screenshots instantly.",
   "permissions": [
     "scripting",
     "activeTab",
@@ -29,7 +29,7 @@
   "commands": {
     "activate-selection": {
       "suggested_key": {
-        "default": "Alt+S"
+        "default": "Alt+X"
       },
       "description": "Activate selection mode"
     }
