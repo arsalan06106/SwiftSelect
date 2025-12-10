@@ -765,11 +765,21 @@
 
 
   async function handleCaptureFullPage() {
+    let scrollbarStyle = null;
     try {
       ensureUi(); // Ensure UI exists
       removeCrosshairCursor(); // Remove drag cursor during capture
       removeListeners(); // Disable drag selection listeners
       dragging = false; // Explicitly disable dragging
+
+      // Inject CSS to hide scrollbars
+      scrollbarStyle = document.createElement("style");
+      scrollbarStyle.textContent = `
+        html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+        html, body { scrollbar-width: none !important; }
+      `;
+      document.head.appendChild(scrollbarStyle);
+      await new Promise(r => requestAnimationFrame(r));
       
       updateBadge("0%");
       
@@ -786,14 +796,19 @@
         btn.appendChild(progressSpan);
       }
       
-      // Hide fixed elements ONLY (leave sticky as they affect layout flow)
+      // Hide fixed and sticky elements
       const fixedElements = [];
       const allElements = document.querySelectorAll('*');
       for (const el of allElements) {
         const style = window.getComputedStyle(el);
-        if (style.position === 'fixed') {
-          fixedElements.push({ el, originalVisibility: el.style.visibility });
+        if (style.position === 'fixed' || style.position === 'sticky' || style.position === '-webkit-sticky') {
+          fixedElements.push({ 
+            el, 
+            originalVisibility: el.style.visibility,
+            originalTransition: el.style.transition
+          });
           el.style.visibility = 'hidden';
+          el.style.setProperty('transition', 'none', 'important');
         }
       }
       
@@ -805,59 +820,97 @@
       const viewportHeight = document.documentElement.clientHeight;
       
       const canvas = document.createElement("canvas");
-      canvas.width = scrollWidth * dpr;
-      canvas.height = scrollHeight * dpr;
+      canvas.width = Math.round(scrollWidth * dpr);
+      canvas.height = Math.round(scrollHeight * dpr);
       const ctx = canvas.getContext("2d");
       
       const originalX = window.scrollX;
       const originalY = window.scrollY;
       
       let y = 0;
+      let currentY = 0; // Stacking pointer
       let rows = Math.ceil(scrollHeight / viewportHeight);
       let currentRow = 0;
 
+      
+      // Stack & Crop Strategy
+      // 1. Calculate precise canvas size
+      canvas.width = Math.round(scrollWidth * dpr);
+      canvas.height = Math.round(scrollHeight * dpr);
+
+      let currentPhysicalY = 0; // Tracks pixels on canvas
+      let logicalY = 0; // Tracks scroll position
+      
       // Hide UI ONCE before loop
       if (guideHost) guideHost.style.display = "none";
-      await new Promise(r => requestAnimationFrame(r)); // Ensure paint
+      await new Promise(r => requestAnimationFrame(r));
 
-      while (y < scrollHeight) {
-        window.scrollTo(0, y);
-        await new Promise(r => setTimeout(r, 800)); // Increased wait for render/lazy-load
-        
-        // Update progress
-        const pct = Math.min(100, Math.round((currentRow / rows) * 100));
-        updateBadge(pct + "%");
-        
-        if (btn) {
-          const span = btn.querySelector(".qs-progress-text");
-          if (span) span.textContent = pct + "%";
+      while (currentPhysicalY < canvas.height) {
+        let isLastSegment = false;
+        let scrollYPos = logicalY;
+
+        // Check if this is the last segment
+        if (logicalY + viewportHeight >= scrollHeight) {
+           isLastSegment = true;
+           scrollYPos = scrollHeight - viewportHeight; // Align to bottom
         }
+
+        window.scrollTo(0, scrollYPos);
+        await new Promise(r => setTimeout(r, 800)); // Render wait
         
-        // Capture visible tab
+         // Update progress
+        const pct = Math.min(100, Math.round((currentPhysicalY / canvas.height) * 100));
+        updateBadge(pct + "%");
+        if (btn) {
+           const span = btn.querySelector(".qs-progress-text");
+           if (span) span.textContent = pct + "%";
+        }
+
         const resp = await new Promise((resolve) => {
           chrome.runtime.sendMessage({ type: "capture-visible-tab" }, resolve);
         });
-        
+
         if (resp && resp.success) {
           const img = await loadImage(resp.dataUrl);
           
-          // Calculate where to draw based on ACTUAL scroll position
-          const actualScrollY = window.scrollY;
-          const drawY = actualScrollY * dpr;
-          
-          ctx.drawImage(img, 0, 0, img.width, img.height, 0, drawY, img.width, img.height);
+          if (!isLastSegment) {
+             // Normal Segment: Draw full image
+             // Use img.height as truth to strictly avoid gaps
+             ctx.drawImage(img, 0, 0, img.width, img.height, 0, currentPhysicalY, img.width, img.height);
+             
+             currentPhysicalY += img.height;
+             logicalY += viewportHeight;
+          } else {
+             // Last Segment: Fill ONLY the remaining space
+             const remaining = canvas.height - currentPhysicalY;
+             if (remaining > 0) {
+                 // We want the BOTTOM 'remaining' pixels of the image
+                 // Source Y = ImageHeight - Remaining
+                 const sourceY = Math.max(0, img.height - remaining);
+                 ctx.drawImage(img, 0, sourceY, img.width, remaining, 0, currentPhysicalY, img.width, remaining);
+             }
+             // Done
+             currentPhysicalY = canvas.height; 
+             break;
+          }
+        } else {
+            // If capture failed, try to skip
+            logicalY += viewportHeight;
         }
-        
-        y += viewportHeight;
-        currentRow++;
       }
       
       // Restore scroll
+      if (scrollbarStyle) {
+        scrollbarStyle.remove();
+        scrollbarStyle = null;
+      }
       window.scrollTo(originalX, originalY);
       
-      // Restore fixed elements
-      for (const { el, originalVisibility } of fixedElements) {
+      // Restore fixed/sticky elements
+      for (const { el, originalVisibility, originalTransition } of fixedElements) {
         el.style.visibility = originalVisibility;
+        if (originalTransition) el.style.transition = originalTransition;
+        else el.style.removeProperty('transition');
       }
       
       updateBadge("100%");
@@ -897,6 +950,10 @@
       
     } catch (err) {
       console.error("Full page capture error:", err);
+      if (scrollbarStyle) {
+        scrollbarStyle.remove();
+        scrollbarStyle = null;
+      }
       updateBadge("ERR", "#DC3545");
       setTimeout(() => updateBadge(""), 3000);
       
