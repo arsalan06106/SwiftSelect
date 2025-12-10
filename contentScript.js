@@ -1039,11 +1039,17 @@
   }
 
   function stopProp(e) {
+    const path = e.composedPath();
+    if (guideHost && path.includes(guideHost)) return;
+    if (statusHost && path.includes(statusHost)) return;
     e.stopPropagation();
     e.stopImmediatePropagation();
   }
 
   function preventAll(e) {
+    const path = e.composedPath();
+    if (guideHost && path.includes(guideHost)) return;
+    if (statusHost && path.includes(statusHost)) return;
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
