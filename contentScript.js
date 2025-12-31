@@ -32,7 +32,9 @@
       font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
       font-weight: 500;
       font-size: 26px;
-      background: #ffebe9; /* Original Background */
+      background: rgba(255, 235, 233, 0.55); /* Sweet spot: 0.55 opacity */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: none;
       border-radius: 999px; /* Original Shape */
       box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
@@ -215,7 +217,9 @@
       font-family: 'Google Sans', system-ui, sans-serif;
       font-weight: 500;
       font-size: 16px;
-      background: #ffebe9;
+      background: rgba(255, 235, 233, 0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: none;
       border-radius: 999px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -245,7 +249,7 @@
 
     .qs-status.qs-success {
       pointer-events: auto;
-      background: #D1E7DD;
+      background: rgba(209, 231, 221, 0.55); /* #D1E7DD converted */
       color: #0A3622;
     }
     .qs-status.qs-success .qs-save-btn {
@@ -275,11 +279,11 @@
       transform: translateY(-1px);
     }
     .qs-status.qs-error {
-      background: #F8D7DA;
+      background: rgba(248, 215, 218, 0.55); /* #F8D7DA converted */
       color: #721C24;
     }
     .qs-status.qs-saved {
-      background: #D1E7DD;
+      background: rgba(209, 231, 221, 0.55); /* #D1E7DD converted */
       color: #0A3622;
     }
     .qs-status-icon {
