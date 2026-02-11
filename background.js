@@ -1,4 +1,4 @@
-// background.js - Fixed full page capture implementation
+// background.js - Full page capture with tab capture stream + offscreen document
 
 chrome.action.onClicked.addListener((tab) => {
   if (!tab?.id) return;
@@ -26,11 +26,17 @@ async function injectAndStart(tab) {
     }
 
     const tabId = tab.id;
-    await chrome.scripting.executeScript({ target: { tabId }, files: ["contentScript.js"] });
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["contentScript.js"],
+    });
 
     chrome.tabs.sendMessage(tabId, { type: "start-selection" }, () => {
       if (chrome.runtime.lastError) {
-        console.warn("sendMessage (start-selection) warning:", chrome.runtime.lastError.message);
+        console.warn(
+          "sendMessage (start-selection) warning:",
+          chrome.runtime.lastError.message,
+        );
       }
     });
   } catch (err) {
@@ -38,23 +44,61 @@ async function injectAndStart(tab) {
   }
 }
 
+// ─── Offscreen Document Management ───────────────────────────────────
+
+let offscreenCreating = null;
+
+async function ensureOffscreen() {
+  const existing = await chrome.offscreen.hasDocument();
+  if (existing) return;
+
+  if (offscreenCreating) {
+    await offscreenCreating;
+    return;
+  }
+
+  offscreenCreating = chrome.offscreen.createDocument({
+    url: "offscreen.html",
+    reasons: ["USER_MEDIA"],
+    justification: "Tab capture for full page screenshot",
+  });
+
+  await offscreenCreating;
+  offscreenCreating = null;
+}
+
+async function closeOffscreen() {
+  try {
+    const existing = await chrome.offscreen.hasDocument();
+    if (existing) {
+      await chrome.offscreen.closeDocument();
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+// ─── Message Handler ─────────────────────────────────────────────────
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // --- Legacy: capture-visible-tab (used for region capture) ---
   if (message?.type === "capture-visible-tab") {
     const tab = sender.tab;
     if (!tab) {
-       sendResponse({ success: false, error: "No tab info" });
-       return true;
+      sendResponse({ success: false, error: "No tab info" });
+      return true;
     }
-    
-    // Check if the tab is still active
     if (!tab.active) {
-       sendResponse({ success: false, error: "Tab is no longer active" });
-       return true;
+      sendResponse({ success: false, error: "Tab is no longer active" });
+      return true;
     }
 
     chrome.tabs.captureVisibleTab(null, { format: "png" }, (dataUrl) => {
       if (chrome.runtime.lastError) {
-        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+        sendResponse({
+          success: false,
+          error: chrome.runtime.lastError.message,
+        });
       } else {
         sendResponse({ success: true, dataUrl });
       }
@@ -62,12 +106,81 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // --- New: Start full page capture via offscreen document ---
+  if (message?.type === "start-fullpage-capture") {
+    const tabId = sender.tab?.id;
+    if (!tabId) {
+      sendResponse({ success: false, error: "No tab ID" });
+      return true;
+    }
+
+    (async () => {
+      try {
+        // 1. Get a media stream ID for this tab
+        const streamId = await chrome.tabCapture.getMediaStreamId({
+          targetTabId: tabId,
+        });
+
+        // 2. Ensure offscreen document is open
+        await ensureOffscreen();
+
+        // 3. Send capture request to offscreen document
+        const result = await chrome.runtime.sendMessage({
+          type: "start-offscreen-capture",
+          streamId,
+          tabId,
+          frameInterval: message.frameInterval || 150,
+        });
+
+        // 4. Close offscreen document
+        await closeOffscreen();
+
+        sendResponse(result);
+      } catch (err) {
+        console.error("start-fullpage-capture error:", err);
+        await closeOffscreen();
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+
+    return true; // async response
+  }
+
+  // --- Relay: offscreen → content script ---
+  if (message?.type === "offscreen-to-content") {
+    const { tabId, action, data } = message;
+    chrome.tabs.sendMessage(
+      tabId,
+      { type: "fullpage-action", action, data },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          sendResponse(null);
+        } else {
+          sendResponse(response);
+        }
+      },
+    );
+    return true;
+  }
+
+  // --- Relay: progress from offscreen → content script ---
+  if (message?.type === "offscreen-progress") {
+    const { tabId, progress, current, total } = message;
+    chrome.tabs.sendMessage(tabId, {
+      type: "fullpage-progress",
+      progress,
+      current,
+      total,
+    });
+    // No response needed
+    return false;
+  }
+
+  // --- Badge updates ---
   if (message.type === "update-badge") {
     chrome.action.setBadgeText({ text: message.text });
     if (message.color) {
       chrome.action.setBadgeBackgroundColor({ color: message.color });
     }
   }
-
-
 });

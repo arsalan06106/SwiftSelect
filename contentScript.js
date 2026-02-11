@@ -20,9 +20,11 @@
     .qs-box {
       all: initial;
       position: absolute;
-      border: 2px solid #ff6a61;
-      border-radius: 12px;
-      background: rgba(255, 106, 97, 0.12);
+      /* V5: High Contrast Double Border */
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 0 2px #1a1a1a;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.1);
       pointer-events: none;
       box-sizing: border-box;
     }
@@ -32,12 +34,13 @@
       font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
       font-weight: 500;
       font-size: 26px;
-      background: rgba(255, 235, 233, 0.55); /* Sweet spot: 0.55 opacity */
+      /* Transparent Glass Background */
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: none;
+      border: 1px solid rgba(0, 0, 0, 0.08); /* Light subtle border for container */
       border-radius: 999px; /* Original Shape */
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
       pointer-events: auto;
       z-index: 2147483648;
       display: flex;
@@ -75,14 +78,14 @@
       text-align: center;
       all: initial;
       cursor: pointer;
-      background: #ff6a61;
-      color: #ffffff;
+      background: transparent;
+      color: #1a1a1a;
       padding: 0 20px;
       border-radius: 999px;
       font-size: 16px;
       font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
       font-weight: 500;
-      border: none;
+      border: 1.5px solid #1a1a1a;
       outline: none;
       transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
       display: flex;
@@ -98,10 +101,14 @@
       width: 28px;
       height: 28px;
       fill: currentColor;
-      transition: all 0.3s ease;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
     .qs-guide-btn:hover {
-      box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.2);
+      background: #1a1a1a;
+      color: #ffffff;
+      border-color: #1a1a1a;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
     }
     .qs-guide-btn:active {
       transform: scale(0.96);
@@ -109,17 +116,17 @@
     /* Segmented Button Group */
     .qs-segmented {
       display: flex;
-      background: #ff6a61;
+      background: transparent;
       border-radius: 999px;
-      padding: 4px;
-      gap: 4px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+      padding: 0;
+      gap: 8px; /* Slight gap since they are separate outlines now */
+      box-shadow: none;
+      transition: none; /* No interaction needed */
       height: auto;
       align-items: center;
     }
     .qs-segmented:hover {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      box-shadow: none;
     }
     .qs-segmented .qs-guide-btn {
       background: transparent;
@@ -127,6 +134,8 @@
       height: 48px;
       transform: none !important;
       border-radius: 999px;
+      /* Ensure border is present */
+      border: 1.5px solid #1a1a1a;
     }
     /* Visible Area Button (Left) */
     .qs-segmented .qs-guide-btn:first-child {
@@ -134,11 +143,12 @@
       padding: 0 16px;
       width: auto;
     }
-    /* Download Button (Right) - Pure Circle */
+    /* Download Button (Right) - Inverse Style */
     .qs-segmented .qs-guide-btn:last-child {
       border-radius: 50%;
-      background: #ffffff;
-      color: #ff6a61;
+      background: #1a1a1a;
+      color: #ffffff;
+      border: 1.5px solid #1a1a1a;
       width: 48px;
       height: 48px;
       padding: 0;
@@ -149,12 +159,16 @@
       height: 24px;
     }
     .qs-segmented .qs-guide-btn:hover {
-      box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.2) !important;
-      transform: none !important;
+      background: #1a1a1a !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
-    /* Specific hover for white download button (dark overlay) */
+    /* Specific hover for inverse download button */
     .qs-segmented .qs-guide-btn:last-child:hover {
-      box-shadow: inset 0 0 0 100px rgba(0, 0, 0, 0.05) !important;
+      background: #ffffff !important;
+      color: #1a1a1a !important;
+      border-color: #1a1a1a !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
     .qs-separator {
       display: none;
@@ -162,6 +176,8 @@
     /* Standalone Full Page Button */
     .qs-guide-buttons > .qs-guide-btn {
       border-radius: 999px !important;
+      /* Ensure border */
+      border: 1.5px solid #1a1a1a;
       padding: 0 20px;
     }
     /* Tooltip */
@@ -217,10 +233,17 @@
       font-family: 'Google Sans', system-ui, sans-serif;
       font-weight: 500;
       font-size: 16px;
-      background: rgba(255, 235, 233, 0.55);
+      /* Solid Background - Status */
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      /* Aurora Background - Status */
+      /* background: 
+        radial-gradient(circle at top left, rgba(255, 106, 97, 0.15), transparent 40%),
+        radial-gradient(circle at bottom right, rgba(90, 139, 255, 0.15), transparent 40%),
+        rgba(255, 255, 255, 0.92); */
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: none;
+      /* border: none; REMOVED */
       border-radius: 999px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       pointer-events: none;
@@ -249,72 +272,79 @@
 
     .qs-status.qs-success {
       pointer-events: auto;
-      background: rgba(209, 231, 221, 0.55); /* #D1E7DD converted */
-      color: #0A3622;
+      /* Success: Monochrome */
+      background: #ffffff;
+      border: 1px solid #1a1a1a;
+      color: #1a1a1a;
     }
     .qs-status.qs-success .qs-save-btn {
-      cursor: pointer;
-      background: #ff6a61;
-      color: white;
-      padding: 0;
       width: 40px;
       height: 40px;
-      min-width: 40px;
       border-radius: 50%;
-      font-size: 0;
-      border: none;
-      outline: none;
-      transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .qs-status.qs-success .qs-save-btn svg {
-      width: 24px;
-      height: 24px;
-      fill: white;
+      /* V4: Inverse Style */
+      background: #1a1a1a;
+      color: #ffffff;
+      border: 1.5px solid #1a1a1a;
+      cursor: pointer;
+      margin-left: auto;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+      padding: 0;
+      min-width: 40px;
     }
     .qs-status.qs-success .qs-save-btn:hover {
-      background: #e85a52;
-      transform: translateY(-1px);
+      background: #ffffff;
+      color: #1a1a1a;
+      transform: scale(1.05);
+      border-color: #1a1a1a;
     }
+    .qs-status.qs-success .qs-save-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
     .qs-status.qs-error {
-      background: rgba(248, 215, 218, 0.55); /* #F8D7DA converted */
-      color: #721C24;
+      /* Error: Monochrome */
+      background: #ffffff;
+      border: 1px solid #1a1a1a;
+      color: #1a1a1a;
     }
     .qs-status.qs-saved {
-      background: rgba(209, 231, 221, 0.55); /* #D1E7DD converted */
-      color: #0A3622;
+      /* Saved: Monochrome */
+      background: #ffffff;
+      border: 1px solid #1a1a1a;
+      color: #1a1a1a;
     }
+    /* Status Icons - V4 Strict Monochrome + V5 Larger Size */
     .qs-status-icon {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #ff6a61;
-      color: white;
-      font-size: 16px;
+      /* Default neutral style */
+      background: #1a1a1a;
+      border: none;
+      color: #ffffff;
+      font-size: 18px;
       font-weight: 600;
       flex-shrink: 0;
     }
     .qs-status.qs-success .qs-status-icon {
-      background: #198754;
-    }
-    .qs-status.qs-success .qs-status-icon::after {
-      content: "✓";
-      font-size: 16px;
+      background: #1a1a1a;
+      color: #ffffff;
     }
     .qs-status.qs-error .qs-status-icon {
-      background: #DC3545;
-    }
-    .qs-status.qs-error .qs-status-icon::after {
-      content: "!";
-      font-size: 16px;
+      background: #1a1a1a;
+      color: #ffffff;
     }
     .qs-status.qs-saved .qs-status-icon {
-      background: #198754;
+      background: #1a1a1a;
+      color: #ffffff;
     }
     .qs-status.qs-saved .qs-status-icon::after {
       content: "✓";
@@ -408,6 +438,58 @@
       .qs-status.qs-success .qs-save-btn { width: 32px; height: 32px; min-width: 32px; }
       .qs-status.qs-success .qs-save-btn svg { width: 16px; height: 16px; }
     }
+
+    /* V6: High Class Animations */
+    
+    /* Eye Blink & Pupil Dilation */
+    @keyframes eyeBlink {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.1); }
+    }
+    @keyframes eyeLook {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(-1px, 0); }
+      75% { transform: translate(1px, 0); }
+    }
+    .qs-guide-btn:hover .eye-lid {
+      animation: eyeBlink 0.4s ease-in-out;
+      transform-origin: center;
+    }
+    .qs-guide-btn:hover .eye-pupil {
+      animation: eyeLook 0.8s ease-in-out;
+    }
+
+    /* Download Arrow Bounce */
+    @keyframes dlBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(3px); }
+    }
+    .qs-guide-btn:hover .dl-arrow,
+    .qs-save-btn:hover .dl-arrow {
+      animation: dlBounce 0.6s ease-in-out;
+    }
+
+    /* Full Page Individual Corner Animations (Scaled for 960px ViewBox) */
+    @keyframes cornerMoveTL { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(40px, 40px); } }
+    @keyframes cornerMoveTR { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-40px, 40px); } }
+    @keyframes cornerMoveBR { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-40px, -40px); } }
+    @keyframes cornerMoveBL { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(40px, -40px); } }
+
+    /* Line Wipe Animation (Left to Right) */
+    @keyframes lineWipe {
+      0% { clip-path: inset(0 100% 0 0); opacity: 0; }
+      20% { opacity: 1; }
+      100% { clip-path: inset(0 0 0 0); opacity: 1; }
+    }
+
+    .qs-guide-btn:hover .fp-tl { animation: cornerMoveTL 0.5s ease-in-out; }
+    .qs-guide-btn:hover .fp-tr { animation: cornerMoveTR 0.5s ease-in-out; }
+    .qs-guide-btn:hover .fp-br { animation: cornerMoveBR 0.5s ease-in-out; }
+    .qs-guide-btn:hover .fp-bl { animation: cornerMoveBL 0.5s ease-in-out; }
+    
+    .qs-guide-btn:hover .fp-lines {
+      animation: lineWipe 0.6s cubic-bezier(0.2, 0, 0, 1);
+    }
   `;
 
   function makeShadowOverlay(tag, className, innerHTML = "") {
@@ -434,7 +516,8 @@
   let overlayHost, boxHost, statusHost, guideHost;
   let overlay, box, statusEl, guideEl, guideShadow;
   let dragging = false;
-  let startX = 0, startY = 0;
+  let startX = 0,
+    startY = 0;
   let rect = { left: 0, top: 0, width: 0, height: 0 };
   let lastBlob = null;
 
@@ -450,7 +533,7 @@
 
   function ensureUi() {
     setCrosshairCursor();
-    
+
     if (!overlayHost) {
       const { host, el } = makeShadowOverlay("div", "qs-ovl");
       overlayHost = host;
@@ -469,36 +552,54 @@
       guideHost = host;
       guideEl = el;
       guideShadow = shadow;
-      
+
       guideEl.innerHTML = `
         <div class="qs-guide-buttons">
           <div class="qs-segmented">
             <button class="qs-guide-btn" data-action="capture-visible" data-tooltip="Copy visible area">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path class="eye-lid" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                <circle class="eye-pupil" cx="12" cy="12" r="3"/>
+              </svg>
               <span>Visible Area</span>
             </button>
             <button class="qs-guide-btn" data-action="capture-download" data-tooltip="Download screenshot">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path class="dl-arrow" d="M19 9h-4V3H9v6H5l7 7 7-7z"/>
+                <path class="dl-bar" d="M5 18v2h14v-2H5z"/>
+              </svg>
             </button>
           </div>
           <button class="qs-guide-btn" data-action="capture-full" data-tooltip="Capture full page">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M67-743.87V-933h189.13v73H140v116.13H67Zm753 0V-860H703.87v-73H893v189.13h-73ZM67-27v-189.13h73V-100h116.13v73H67Zm636.87 0v-73H820v-116.13h73V-27H703.87ZM273-233h414v-494H273v494Zm0 79.22q-31.38 0-55.3-23.92-23.92-23.92-23.92-55.3v-494q0-31.38 23.92-55.3 23.92-23.92 55.3-23.92h414q31.38 0 55.3 23.92 23.92 23.92 23.92 55.3v494q0 31.38-23.92 55.3-23.92 23.92-55.3 23.92H273Zm94.74-413.96h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09ZM273-233v-494 494Z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+              <!-- Split Corners (Original Material Icon) -->
+              <path class="fp-corner fp-tl" d="M67-743.87V-933h189.13v73H140v116.13H67Z"/>
+              <path class="fp-corner fp-tr" d="M893-743.87V-933H703.87v73H820v116.13h73Z"/>
+              <path class="fp-corner fp-br" d="M893-216.13V-27H703.87v-73H820v-116.13h73Z"/>
+              <path class="fp-corner fp-bl" d="M67-216.13V-27H256.13v-73H140v-116.13H67Z"/>
+              <!-- Internal Lines -->
+              <path class="fp-lines" d="M273-233h414v-494H273v494Zm0 79.22q-31.38 0-55.3-23.92-23.92-23.92-23.92-55.3v-494q0-31.38 23.92-55.3 23.92-23.92 55.3-23.92h414q31.38 0 55.3 23.92 23.92 23.92 23.92 55.3v494q0 31.38-23.92 55.3-23.92 23.92-55.3 23.92H273Zm94.74-413.96h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09ZM273-233v-494 494Z"/>
+            </svg>
             <span>Full Page</span>
           </button>
         </div>
       `;
-      
+
       // Add listeners
-      const visibleBtn = guideShadow.querySelector('[data-action="capture-visible"]');
+      const visibleBtn = guideShadow.querySelector(
+        '[data-action="capture-visible"]',
+      );
       visibleBtn.onclick = handleCaptureVisible;
-      
-      const downloadBtn = guideShadow.querySelector('[data-action="capture-download"]');
+
+      const downloadBtn = guideShadow.querySelector(
+        '[data-action="capture-download"]',
+      );
       downloadBtn.onclick = handleCaptureAndDownload;
-      
+
       const fullBtn = guideShadow.querySelector('[data-action="capture-full"]');
       fullBtn.onclick = handleCaptureFullPage;
     }
-    
+
     // Ensure guide is visible AND RESET ANIMATION CLASS
     if (guideHost) {
       guideHost.style.display = "flex";
@@ -515,7 +616,7 @@
 
   function setStatus(msg, timeout = 1500, type = "info", noAnim = false) {
     if (!msg || !msg.trim()) return;
-    
+
     if (!statusHost || !statusEl) {
       const { host, el } = makeShadowOverlay("div", "qs-status");
       statusHost = host;
@@ -528,7 +629,7 @@
     statusEl.className = "qs-status";
     statusEl.classList.remove("qs-hiding");
     if (noAnim) statusEl.classList.add("no-anim");
-    
+
     statusEl.innerHTML = "";
     const iconEl = document.createElement("div");
     iconEl.className = "qs-status-icon";
@@ -542,7 +643,8 @@
       statusEl.classList.add("qs-success");
       const saveBtn = document.createElement("button");
       saveBtn.className = "qs-save-btn";
-      saveBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>';
+      saveBtn.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="dl-arrow" d="M19 9h-4V3H9v6H5l7 7 7-7z"/><path class="dl-bar" d="M5 18v2h14v-2H5z"/></svg>';
       saveBtn.onclick = () => handleSaveAction();
       statusEl.appendChild(saveBtn);
       timeout = 5000; // Increased timeout for success
@@ -556,7 +658,7 @@
 
     statusHost.style.display = "";
     statusEl.style.display = "flex";
-    
+
     currentStatus = type;
 
     if (timeout > 0) {
@@ -565,37 +667,45 @@
         statusEl.classList.add("qs-hiding");
         setTimeout(() => {
           if (statusEl.classList.contains("qs-hiding")) {
-             statusEl.style.display = "none";
-             statusHost.style.display = "none";
-             statusEl.classList.remove("qs-hiding");
-             currentStatus = null;
+            statusEl.style.display = "none";
+            statusHost.style.display = "none";
+            statusEl.classList.remove("qs-hiding");
+            currentStatus = null;
           }
         }, 300); // 300ms matches animation duration
       }, timeout);
     }
   }
 
-
   function cleanup() {
     removeCrosshairCursor();
     dragging = false;
     if (boxHost && boxHost.parentNode) boxHost.parentNode.removeChild(boxHost);
-    boxHost = null; box = null;
-    if (overlayHost && overlayHost.parentNode) overlayHost.parentNode.removeChild(overlayHost);
-    overlayHost = null; overlay = null;
-    
+    boxHost = null;
+    box = null;
+    if (overlayHost && overlayHost.parentNode)
+      overlayHost.parentNode.removeChild(overlayHost);
+    overlayHost = null;
+    overlay = null;
+
     // Animate guide out
     if (guideEl && guideHost) {
-        guideEl.classList.add("qs-hiding");
-        setTimeout(() => {
-            if (guideHost && guideHost.parentNode) guideHost.parentNode.removeChild(guideHost);
-            guideHost = null; guideEl = null; guideShadow = null;
-        }, 300);
+      guideEl.classList.add("qs-hiding");
+      setTimeout(() => {
+        if (guideHost && guideHost.parentNode)
+          guideHost.parentNode.removeChild(guideHost);
+        guideHost = null;
+        guideEl = null;
+        guideShadow = null;
+      }, 300);
     } else {
-        if (guideHost && guideHost.parentNode) guideHost.parentNode.removeChild(guideHost);
-        guideHost = null; guideEl = null; guideShadow = null;
+      if (guideHost && guideHost.parentNode)
+        guideHost.parentNode.removeChild(guideHost);
+      guideHost = null;
+      guideEl = null;
+      guideShadow = null;
     }
-    
+
     removeListeners();
   }
 
@@ -615,33 +725,33 @@
     // Satisfying smooth morph transition
     const textSpan = statusEl.querySelector("span");
     const saveBtn = statusEl.querySelector(".qs-save-btn");
-    
+
     if (textSpan && saveBtn) {
       // Add smooth transitions with bounce
       textSpan.style.transition = "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
       saveBtn.style.transition = "all 0.3s ease-out";
       statusEl.style.transition = "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
-      
+
       // Stage 1: Slight scale up and button fade
       statusEl.style.transform = "translate(-50%, -3px) scale(1.05)";
       saveBtn.style.opacity = "0";
       saveBtn.style.transform = "scale(0.7) translateX(10px)";
-      
+
       setTimeout(() => {
         // Stage 2: Text morphs with scale
         textSpan.style.transform = "scale(0.9)";
         textSpan.style.opacity = "0.3";
-        
+
         setTimeout(() => {
           // Stage 3: Change content and morph back
           textSpan.textContent = "Image saved successfully";
           statusEl.classList.remove("qs-success");
           statusEl.classList.add("qs-saved");
           saveBtn.remove();
-          
+
           textSpan.style.transform = "scale(1.1)";
           textSpan.style.opacity = "1";
-          
+
           setTimeout(() => {
             // Stage 4: Settle to final state with bounce
             textSpan.style.transform = "scale(1)";
@@ -699,10 +809,15 @@
       ctx.drawImage(img, 0, 0);
 
       lastBlob = await new Promise((res, rej) =>
-        canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), "image/png")
+        canvas.toBlob(
+          (b) => (b ? res(b) : rej(new Error("toBlob failed"))),
+          "image/png",
+        ),
       );
 
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": lastBlob })]);
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": lastBlob }),
+      ]);
       setStatus("Visible area copied to clipboard", 5000, "success");
     } catch (err) {
       console.error("handleCaptureVisible error:", err);
@@ -731,22 +846,27 @@
       ctx.drawImage(img, 0, 0);
 
       lastBlob = await new Promise((res, rej) =>
-        canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), "image/png")
+        canvas.toBlob(
+          (b) => (b ? res(b) : rej(new Error("toBlob failed"))),
+          "image/png",
+        ),
       );
 
       // Copy to clipboard
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": lastBlob })]);
-      
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": lastBlob }),
+      ]);
+
       // Also download the image
       const url = URL.createObjectURL(lastBlob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `screenshot-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}.png`;
+      a.download = `screenshot-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, "-")}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       setStatus("Copied to clipboard and downloaded", 5000, "saved");
     } catch (err) {
       console.error("handleCaptureAndDownload error:", err);
@@ -756,235 +876,428 @@
     }
   }
 
-
   async function hideUiForCapture() {
-    if (overlayHost) overlayHost.style.display = "none";
-    if (boxHost) boxHost.style.display = "none";
     if (guideHost) guideHost.style.display = "none";
     if (statusHost) statusHost.style.display = "none";
-    await nextPaint();
-    await new Promise(r => setTimeout(r, 50));
+    if (boxHost) boxHost.style.display = "none";
+    await new Promise((r) => requestAnimationFrame(r));
+    await new Promise((r) => setTimeout(r, 100));
   }
 
+  // ─── CSS Unrolling Helpers ──────────────────────────────────────────
+  // Used to "scroll" the page using CSS transforms rather than real scrolling.
+  // This avoids triggering lazy-load, scroll events, and handles fixed elements.
 
+  let _unrollStyle = null;
+  let _unrollScrollStyle = null;
+  let _originalScrollTop = 0;
 
-  async function handleCaptureFullPage() {
-    let scrollbarStyle = null;
-    try {
-      ensureUi(); // Ensure UI exists
-      removeCrosshairCursor(); // Remove drag cursor during capture
-      removeListeners(); // Disable drag selection listeners
-      dragging = false; // Explicitly disable dragging
+  /**
+   * Measure the true full-page content height BEFORE any CSS injection.
+   * This handles pages like Gemini where html/body have height:100%
+   * and scrollHeight on documentElement equals viewport height.
+   * We find the inner scrollable element (if any) and use its scrollHeight.
+   */
+  function measureFullContentHeight() {
+    // 1. Check if the page uses window/body scrolling
+    const docSH = document.documentElement.scrollHeight;
+    const bodySH = document.body.scrollHeight;
+    const winH = window.innerHeight;
 
-      // Inject CSS to hide scrollbars
-      scrollbarStyle = document.createElement("style");
-      scrollbarStyle.textContent = `
-        html::-webkit-scrollbar, body::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-        html, body { scrollbar-width: none !important; }
-      `;
-      document.head.appendChild(scrollbarStyle);
-      await new Promise(r => requestAnimationFrame(r));
-      
-      updateBadge("0%");
-      
-      const btn = guideShadow?.querySelector('[data-action="capture-full"]');
-      const originalIcon = btn?.innerHTML;
-      
-      // 1. Start Loading
-      if (btn) {
-        btn.classList.add("qs-loading");
-        // Create progress text element
-        let progressSpan = document.createElement("span");
-        progressSpan.className = "qs-progress-text";
-        progressSpan.textContent = "0%";
-        btn.appendChild(progressSpan);
-      }
-      
-      // Hide fixed and sticky elements
-      const fixedElements = [];
-      const allElements = document.querySelectorAll('*');
-      for (const el of allElements) {
-        const style = window.getComputedStyle(el);
-        if (style.position === 'fixed' || style.position === 'sticky' || style.position === '-webkit-sticky') {
-          fixedElements.push({ 
-            el, 
-            originalVisibility: el.style.visibility,
-            originalTransition: el.style.transition
-          });
-          el.style.visibility = 'hidden';
-          el.style.setProperty('transition', 'none', 'important');
+    // If documentElement or body has scrollable content, use that
+    if (docSH > winH + 50 || bodySH > winH + 50) {
+      return Math.max(docSH, bodySH);
+    }
+
+    // 2. The page likely uses an inner scrollable container (e.g. Gemini, Slack)
+    //    Find the largest scrollable element and use its scrollHeight
+    const allElements = document.querySelectorAll("*");
+    let bestHeight = 0;
+    let bestElement = null;
+    let bestArea = 0;
+
+    for (const el of allElements) {
+      const style = window.getComputedStyle(el);
+      if (
+        (style.overflowY === "auto" || style.overflowY === "scroll") &&
+        el.scrollHeight > el.clientHeight + 50
+      ) {
+        const r = el.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) {
+          const area = r.width * r.height;
+          if (area > bestArea && area > winH * window.innerWidth * 0.2) {
+            bestArea = area;
+            bestHeight = el.scrollHeight;
+            bestElement = el;
+          }
         }
       }
-      
-      // 2. Prepare
-      const dpr = window.devicePixelRatio || 1;
-      const scrollWidth = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth);
-      const scrollHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-      const viewportWidth = document.documentElement.clientWidth;
-      const viewportHeight = document.documentElement.clientHeight;
-      
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.round(scrollWidth * dpr);
-      canvas.height = Math.round(scrollHeight * dpr);
-      const ctx = canvas.getContext("2d");
-      
-      const originalX = window.scrollX;
-      const originalY = window.scrollY;
-      
-      let y = 0;
-      let currentY = 0; // Stacking pointer
-      let rows = Math.ceil(scrollHeight / viewportHeight);
-      let currentRow = 0;
+    }
 
-      
-      // Stack & Crop Strategy
-      // 1. Calculate precise canvas size
-      canvas.width = Math.round(scrollWidth * dpr);
-      canvas.height = Math.round(scrollHeight * dpr);
+    if (bestElement) {
+      // Also scroll the inner element to top before capture
+      bestElement.scrollTo({ top: 0, behavior: "instant" });
 
-      let currentPhysicalY = 0; // Tracks pixels on canvas
-      let logicalY = 0; // Tracks scroll position
-      
-      // Hide UI ONCE before loop
-      if (guideHost) guideHost.style.display = "none";
-      await new Promise(r => requestAnimationFrame(r));
+      // The total page height is the scroller's full content PLUS the space
+      // occupied by non-scrollable elements (header, footer, input bar, etc.)
+      // Non-scroller height = viewport - scroller's visible area
+      const nonScrollerHeight = winH - bestElement.clientHeight;
+      const totalHeight = bestHeight + nonScrollerHeight;
 
-      while (currentPhysicalY < canvas.height) {
-        let isLastSegment = false;
-        let scrollYPos = logicalY;
+      console.log("[SwiftSelect] Inner scroller detected:", {
+        scrollerTag: bestElement.tagName,
+        scrollerScrollHeight: bestHeight,
+        scrollerClientHeight: bestElement.clientHeight,
+        nonScrollerHeight,
+        totalHeight,
+      });
 
-        // Check if this is the last segment
-        if (logicalY + viewportHeight >= scrollHeight) {
-           isLastSegment = true;
-           scrollYPos = scrollHeight - viewportHeight; // Align to bottom
+      return totalHeight;
+    }
+
+    // Fallback: use whatever we have
+    return Math.max(docSH, bodySH, winH);
+  }
+
+  function applyUnrollCSS(contentHeight) {
+    _originalScrollTop = window.scrollY || document.documentElement.scrollTop;
+    document.scrollingElement?.scrollTo({ top: 0, behavior: "instant" });
+
+    _unrollStyle = document.createElement("style");
+    _unrollStyle.setAttribute("data-swiftselect-unroll", "true");
+
+    // The key insight from the reference extension:
+    // Force html to the EXACT content height in pixels, overriding any
+    // height:100% or height:auto that the page may have set.
+    const heightCSS = contentHeight
+      ? `height: ${contentHeight}px !important;`
+      : "";
+
+    _unrollStyle.textContent = `
+      * {
+        transition: none !important;
+        animation-play-state: paused !important;
+        box-shadow: none !important;
+        cursor: none !important;
+        pointer-events: none !important;
+      }
+      html {
+        transform: translate3d(0px, var(--scroll-top, 0px), 0px) !important;
+        overflow: hidden !important;
+        min-height: 100vh !important;
+        max-height: none !important;
+        ${heightCSS}
+      }
+      html::-webkit-scrollbar, body::-webkit-scrollbar {
+        display: none !important; width: 0 !important; height: 0 !important;
+      }
+      html, body { scrollbar-width: none !important; }
+      *::-webkit-scrollbar {
+        display: none !important; width: 0 !important; height: 0 !important;
+      }
+      * { scrollbar-width: none !important; }
+    `;
+    document.head.appendChild(_unrollStyle);
+  }
+
+  function setUnrollPosition(scrollTop) {
+    if (_unrollScrollStyle) _unrollScrollStyle.remove();
+    _unrollScrollStyle = document.createElement("style");
+    _unrollScrollStyle.setAttribute("data-swiftselect-unroll-scroll", "true");
+    _unrollScrollStyle.textContent = `
+      html { --scroll-top: ${-scrollTop}px !important; }
+    `;
+    document.head.appendChild(_unrollScrollStyle);
+  }
+
+  function removeUnrollCSS() {
+    if (_unrollStyle) {
+      _unrollStyle.remove();
+      _unrollStyle = null;
+    }
+    if (_unrollScrollStyle) {
+      _unrollScrollStyle.remove();
+      _unrollScrollStyle = null;
+    }
+    window.scrollTo(0, _originalScrollTop);
+  }
+
+  // Called by offscreen doc via background relay
+  function handleUnrollPage() {
+    // STEP 0: Force-clear hover states to hide hover-triggered UI elements
+    // (e.g., Gemini's "+" buttons that appear on hover over responses)
+    document.activeElement?.blur();
+    // Dispatch mouseleave on any currently hovered elements
+    const hovered = document.querySelectorAll(":hover");
+    hovered.forEach((el) => {
+      el.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+      el.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
+    });
+    // Move "mouse" off-screen to clear all hover states
+    document.documentElement.dispatchEvent(
+      new MouseEvent("mouseleave", { bubbles: true, clientX: -1, clientY: -1 }),
+    );
+
+    // STEP 1: Measure the FULL content height BEFORE CSS injection.
+    // This is critical for pages like Gemini where html{height:100%}
+    // would make rect.height equal viewport height after CSS.
+    const contentHeight = measureFullContentHeight();
+
+    console.log("[SwiftSelect] Pre-CSS contentHeight:", contentHeight);
+
+    // STEP 2: Apply CSS with the forced height — scrolls to top + injects styles
+    applyUnrollCSS(contentHeight);
+
+    // STEP 3: Wait a tick, then measure rect AFTER CSS is applied.
+    // Now html has height:Xpx, so getBoundingClientRect() returns the true height.
+    const rect = document.documentElement.getBoundingClientRect();
+
+    console.log("[SwiftSelect] handleUnrollPage rect:", {
+      contentHeight,
+      rectHeight: rect.height,
+      rectBottom: rect.bottom,
+      innerHeight: window.innerHeight,
+    });
+
+    // Detect page background color for canvas pre-fill
+    const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+    const htmlBg = window.getComputedStyle(
+      document.documentElement,
+    ).backgroundColor;
+    // Prefer body bg, fall back to html bg (skip transparent/rgba(0,0,0,0))
+    const bgColor =
+      bodyBg && bodyBg !== "rgba(0, 0, 0, 0)"
+        ? bodyBg
+        : htmlBg && htmlBg !== "rgba(0, 0, 0, 0)"
+          ? htmlBg
+          : null;
+
+    return {
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio || 1,
+      scrollHeight: Math.max(contentHeight, rect.height),
+      rect: { height: rect.height, bottom: rect.bottom },
+      rectBottom: rect.bottom,
+      bgColor,
+    };
+  }
+
+  function handleUpdateUnroll(scrollTop) {
+    setUnrollPosition(scrollTop);
+    const rect = document.documentElement.getBoundingClientRect();
+    return {
+      rectBottom: rect.bottom,
+      rect: { height: rect.height, bottom: rect.bottom },
+    };
+  }
+
+  function handleRestoreUnroll() {
+    removeUnrollCSS();
+  }
+
+  function findMainScrollableElement() {
+    const bodyScrollHeight = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+    );
+    const windowHeight = window.innerHeight;
+
+    if (
+      bodyScrollHeight > windowHeight + 100 &&
+      window.getComputedStyle(document.body).overflowY !== "hidden" &&
+      window.getComputedStyle(document.documentElement).overflowY !== "hidden"
+    ) {
+      return null; // Window/body scrolling
+    }
+
+    const allElements = document.querySelectorAll("*");
+    let bestCandidate = null;
+    let maxArea = 0;
+
+    for (const el of allElements) {
+      const style = window.getComputedStyle(el);
+      if (
+        (style.overflowY === "auto" || style.overflowY === "scroll") &&
+        el.scrollHeight > el.clientHeight
+      ) {
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const area = rect.width * rect.height;
+          if (
+            area > maxArea &&
+            area > window.innerWidth * window.innerHeight * 0.2
+          ) {
+            maxArea = area;
+            bestCandidate = el;
+          }
         }
+      }
+    }
 
-        window.scrollTo(0, scrollYPos);
-        await new Promise(r => setTimeout(r, 800)); // Render wait
-        
-         // Update progress
-        const pct = Math.min(100, Math.round((currentPhysicalY / canvas.height) * 100));
-        updateBadge(pct + "%");
-        if (btn) {
-           const span = btn.querySelector(".qs-progress-text");
-           if (span) span.textContent = pct + "%";
-        }
+    return bestCandidate;
+  }
 
+  /**
+   * Capture the visible tab via background script.
+   * Retries up to 3 times with exponential backoff to handle
+   * Chrome's MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND quota.
+   */
+  async function captureFrame(retries = 3) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
         const resp = await new Promise((resolve) => {
           chrome.runtime.sendMessage({ type: "capture-visible-tab" }, resolve);
         });
-
-        if (resp && resp.success) {
-          const img = await loadImage(resp.dataUrl);
-          
-          if (!isLastSegment) {
-             // Normal Segment: Draw full image
-             // Use img.height as truth to strictly avoid gaps
-             ctx.drawImage(img, 0, 0, img.width, img.height, 0, currentPhysicalY, img.width, img.height);
-             
-             currentPhysicalY += img.height;
-             logicalY += viewportHeight;
-          } else {
-             // Last Segment: Fill ONLY the remaining space
-             const remaining = canvas.height - currentPhysicalY;
-             if (remaining > 0) {
-                 // We want the BOTTOM 'remaining' pixels of the image
-                 // Source Y = ImageHeight - Remaining
-                 const sourceY = Math.max(0, img.height - remaining);
-                 ctx.drawImage(img, 0, sourceY, img.width, remaining, 0, currentPhysicalY, img.width, remaining);
-             }
-             // Done
-             currentPhysicalY = canvas.height; 
-             break;
-          }
-        } else {
-            // If capture failed, try to skip
-            logicalY += viewportHeight;
+        if (resp?.success) return resp.dataUrl;
+        const errMsg = resp?.error || "capture-visible-tab failed";
+        // If rate-limited, retry after a delay
+        if (errMsg.includes("MAX_CAPTURE") && attempt < retries) {
+          const delay = 600 * Math.pow(2, attempt); // 600, 1200, 2400ms
+          console.log(`[SwiftSelect] Rate limited, retrying in ${delay}ms...`);
+          await new Promise((r) => setTimeout(r, delay));
+          continue;
         }
+        throw new Error(errMsg);
+      } catch (err) {
+        if (attempt >= retries) throw err;
+        await new Promise((r) => setTimeout(r, 600 * Math.pow(2, attempt)));
       }
-      
-      // Restore scroll
-      if (scrollbarStyle) {
-        scrollbarStyle.remove();
-        scrollbarStyle = null;
+    }
+  }
+
+  async function handleCaptureFullPage() {
+    let originalIcon = null;
+    let scrollbarStyle = null;
+    const btn = guideShadow?.querySelector('[data-action="capture-full"]');
+
+    try {
+      ensureUi();
+      removeCrosshairCursor();
+      removeListeners();
+      dragging = false;
+      updateBadge("0%");
+
+      originalIcon = btn?.innerHTML;
+      if (btn) {
+        btn.classList.add("qs-loading");
+        const ps = document.createElement("span");
+        ps.className = "qs-progress-text";
+        ps.textContent = "0%";
+        btn.appendChild(ps);
       }
-      window.scrollTo(originalX, originalY);
-      
-      // Restore fixed/sticky elements
-      for (const { el, originalVisibility, originalTransition } of fixedElements) {
-        el.style.visibility = originalVisibility;
-        if (originalTransition) el.style.transition = originalTransition;
-        else el.style.removeProperty('transition');
+
+      // Hide UI before capture
+      if (guideHost) guideHost.style.display = "none";
+      await new Promise((r) => requestAnimationFrame(r));
+
+      // Clear all hover states EARLY so the page has time to process
+      // (e.g., Gemini's "+" buttons that appear on hover over responses)
+      document.activeElement?.blur();
+      const hovered = document.querySelectorAll(":hover");
+      hovered.forEach((el) => {
+        el.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+        el.dispatchEvent(new MouseEvent("mouseout", { bubbles: true }));
+      });
+      document.documentElement.dispatchEvent(
+        new MouseEvent("mouseleave", {
+          bubbles: true,
+          clientX: -1,
+          clientY: -1,
+        }),
+      );
+      // Give the page's JS time to process hover-off events and re-render
+      await new Promise((r) => setTimeout(r, 80));
+
+      const dpr = window.devicePixelRatio || 1;
+      const viewportW = window.innerWidth;
+      const viewportH = window.innerHeight;
+
+      console.log(
+        "[SwiftSelect] Full page capture — using offscreen document path",
+        {
+          bodyScrollHeight: document.body.scrollHeight,
+          docScrollHeight: document.documentElement.scrollHeight,
+          innerHeight: viewportH,
+        },
+      );
+
+      // ============================================================
+      // CSS Unrolling + Tab Capture Stream via Offscreen Document
+      // Uses getUserMedia + ImageCapture — NO rate limiting.
+      // measureFullContentHeight() inside handleUnrollPage detects
+      // inner scrollers (e.g., Gemini, Slack) and forces html height.
+      // ============================================================
+      const result = await new Promise((resolve) => {
+        chrome.runtime.sendMessage(
+          { type: "start-fullpage-capture", frameInterval: 50 },
+          resolve,
+        );
+      });
+
+      if (!result || !result.success) {
+        throw new Error(result?.error || "Full page capture failed");
       }
-      
+
+      const response = await fetch(result.dataUrl);
+      lastBlob = await response.blob();
+
       updateBadge("100%");
-      
-      // 3. Success State
       if (btn) {
         btn.classList.remove("qs-loading");
-        // Remove progress span
-        const span = btn.querySelector(".qs-progress-text");
-        if (span) span.remove();
+        btn.querySelector(".qs-progress-text")?.remove();
         btn.classList.add("qs-success");
-        // Swap icon to checkmark
-        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg><span>Full Page</span>';
+        btn.innerHTML =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg><span>Full Page</span>';
+        setTimeout(() => {
+          btn.classList.remove("qs-success");
+          if (originalIcon) btn.innerHTML = originalIcon;
+        }, 2000);
       }
-      
-      // Show UI back
-      // if (guideHost) guideHost.style.display = "flex"; // Don't show menu after capture
 
-      lastBlob = await new Promise((res, rej) =>
-        canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), "image/png")
-      );
-      
-      // Download
       const url = URL.createObjectURL(lastBlob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `fullpage-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}.png`;
+      a.download = `fullpage-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, "-")}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       updateBadge("✓", "#198754");
       setTimeout(() => updateBadge(""), 3000);
-      
-      cleanup(); // Close the menu immediately
-      
+      cleanup();
     } catch (err) {
       console.error("Full page capture error:", err);
-      if (scrollbarStyle) {
-        scrollbarStyle.remove();
-        scrollbarStyle = null;
-      }
+      removeUnrollCSS();
+      if (scrollbarStyle) scrollbarStyle.remove();
       updateBadge("ERR", "#DC3545");
       setTimeout(() => updateBadge(""), 3000);
-      
-      const btn = guideShadow?.querySelector('[data-action="capture-full"]');
+
       if (btn) {
         btn.classList.remove("qs-loading");
         btn.classList.remove("qs-success");
-        // Clean up progress span if it exists
-        const span = btn.querySelector(".qs-progress-text");
-        if (span) span.remove();
-        
+        btn.querySelector(".qs-progress-text")?.remove();
         if (originalIcon) btn.innerHTML = originalIcon;
       }
       setStatus("Capture failed", 3000, "error");
-      if (guideHost) guideHost.style.display = "flex"; // Ensure visible on error
+      if (guideHost) guideHost.style.display = "flex";
     }
   }
 
   function onMouseDown(e) {
     if (e.button !== 0) return;
-    
+
     const path = e.composedPath();
     // Check if the click is on the guide host or any of its children
-    const isOnGuide = path.some(el => el === guideHost || (el.classList && el.classList.contains('qs-guide-btn')));
-    
+    const isOnGuide = path.some(
+      (el) =>
+        el === guideHost ||
+        (el.classList && el.classList.contains("qs-guide-btn")),
+    );
+
     if (isOnGuide) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
@@ -1021,7 +1334,7 @@
 
   function onMouseUp(e) {
     if (!dragging) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
@@ -1075,16 +1388,28 @@
       const sh = Math.round(viewRect.height * dpr);
 
       const canvas = document.createElement("canvas");
-      canvas.width = sw;
-      canvas.height = sh;
+      // Fix: Ensure dimensions are > 0 to prevent toBlob failures
+      const safeSw = Math.max(1, sw);
+      const safeSh = Math.max(1, sh);
+
+      canvas.width = safeSw;
+      canvas.height = safeSh;
       const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, safeSw, safeSh);
 
       lastBlob = await new Promise((res, rej) =>
-        canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), "image/png")
+        canvas.toBlob(
+          (b) =>
+            b
+              ? res(b)
+              : rej(new Error("toBlob failed - likely 0 dimension or taint")),
+          "image/png",
+        ),
       );
 
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": lastBlob })]);
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": lastBlob }),
+      ]);
     } catch (err) {
       console.error("captureAndCrop error:", err);
       setStatus("Capture failed", 3000, "error");
@@ -1097,6 +1422,26 @@
     document.addEventListener("mousemove", onMouseMove, true);
     document.addEventListener("mouseup", onMouseUp, true);
     document.addEventListener("keydown", onKeyDown, true);
+
+    // Block other events from reaching the page
+    document.addEventListener("pointerdown", stopProp, true);
+    document.addEventListener("pointerup", stopProp, true);
+    document.addEventListener("click", preventAll, true);
+    document.addEventListener("dblclick", preventAll, true);
+    document.addEventListener("contextmenu", preventAll, true);
+  }
+
+  function removeListeners() {
+    document.removeEventListener("mousedown", onMouseDown, true);
+    document.removeEventListener("mousemove", onMouseMove, true);
+    document.removeEventListener("mouseup", onMouseUp, true);
+    document.removeEventListener("keydown", onKeyDown, true);
+
+    document.removeEventListener("pointerdown", stopProp, true);
+    document.removeEventListener("pointerup", stopProp, true);
+    document.removeEventListener("click", preventAll, true);
+    document.removeEventListener("dblclick", preventAll, true);
+    document.removeEventListener("contextmenu", preventAll, true);
   }
 
   function stopProp(e) {
@@ -1116,35 +1461,10 @@
     e.stopImmediatePropagation();
   }
 
-  function addListeners() {
-    document.addEventListener("mousedown", onMouseDown, true);
-    document.addEventListener("mousemove", onMouseMove, true);
-    document.addEventListener("mouseup", onMouseUp, true);
-    document.addEventListener("keydown", onKeyDown, true);
-    
-    // Block other events from reaching the page
-    document.addEventListener("pointerdown", stopProp, true);
-    document.addEventListener("pointerup", stopProp, true);
-    document.addEventListener("click", preventAll, true);
-    document.addEventListener("dblclick", preventAll, true);
-    document.addEventListener("contextmenu", preventAll, true);
-  }
-
-  function removeListeners() {
-    document.removeEventListener("mousedown", onMouseDown, true);
-    document.removeEventListener("mousemove", onMouseMove, true);
-    document.removeEventListener("mouseup", onMouseUp, true);
-    document.removeEventListener("keydown", onKeyDown, true);
-    
-    document.removeEventListener("pointerdown", stopProp, true);
-    document.removeEventListener("pointerup", stopProp, true);
-    document.removeEventListener("click", preventAll, true);
-    document.removeEventListener("dblclick", preventAll, true);
-    document.removeEventListener("contextmenu", preventAll, true);
-  }
-
   function nextPaint() {
-    return new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return new Promise((r) =>
+      requestAnimationFrame(() => requestAnimationFrame(r)),
+    );
   }
 
   function loadImage(src) {
@@ -1176,6 +1496,30 @@
     } else if (request.type === "capture-full") {
       handleCaptureFullPage();
       sendResponse({ success: true });
+    } else if (request.type === "fullpage-action") {
+      // Messages relayed from offscreen doc via background
+      const { action, data } = request;
+      if (action === "unroll-page") {
+        const result = handleUnrollPage();
+        sendResponse(result);
+      } else if (action === "update-unroll") {
+        const result = handleUpdateUnroll(data.scrollTop);
+        sendResponse(result);
+      } else if (action === "restore-unroll") {
+        handleRestoreUnroll();
+        sendResponse({ ok: true });
+      } else {
+        sendResponse(null);
+      }
+    } else if (request.type === "fullpage-progress") {
+      // Progress updates from offscreen doc
+      const { progress } = request;
+      updateBadge(progress + "%");
+      const btn = guideShadow?.querySelector('[data-action="capture-full"]');
+      if (btn) {
+        const span = btn.querySelector(".qs-progress-text");
+        if (span) span.textContent = progress + "%";
+      }
     }
   });
 
