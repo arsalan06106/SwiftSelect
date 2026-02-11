@@ -19,7 +19,9 @@ async function injectAndStart(tab) {
       url.startsWith("chrome://") ||
       url.startsWith("edge://") ||
       url.startsWith("about:") ||
-      url.startsWith("chrome-extension://")
+      url.startsWith("chrome-extension://") ||
+      url.startsWith("https://chrome.google.com/webstore") ||
+      url.startsWith("https://chromewebstore.google.com")
     ) {
       console.warn("Quick Select Copy cannot run on this page:", url);
       return;
@@ -40,7 +42,11 @@ async function injectAndStart(tab) {
       }
     });
   } catch (err) {
-    console.error("injectAndStart error:", err);
+    if (err.message.includes("extensions gallery cannot be scripted")) {
+      console.warn("Cannot run on extension gallery page.");
+    } else {
+      console.error("injectAndStart error:", err);
+    }
   }
 }
 
