@@ -108,6 +108,7 @@ async function getTabStream(streamId, width, height) {
         minHeight: height,
         maxHeight: height,
       },
+      cursor: "never", // Direct property of video constraint
     },
   });
 }

@@ -4,12 +4,16 @@
   window.__qsInjected = true;
 
   const SHADOW_CSS = `
+    /* =========================================
+       1. LAYOUT & STRUCTURE (Geometry only)
+       ========================================= */
+    
+    /* UI Overlay */
     .qs-ovl {
       all: initial;
       position: fixed;
       inset: 0;
       z-index: 2147483647;
-      background: rgba(0, 0, 0, 0.02);
       cursor: crosshair !important;
       user-select: none;
       pointer-events: auto;
@@ -17,30 +21,45 @@
     .qs-ovl * {
       cursor: crosshair !important;
     }
+    
+    /* Selection Box */
     .qs-box {
       all: initial;
       position: absolute;
-      /* V5: High Contrast Double Border */
-      border: 2px solid #ffffff;
-      box-shadow: 0 0 0 2px #1a1a1a;
+      border-width: 2px;
+      border-style: solid;
       border-radius: 6px;
-      background: rgba(0, 0, 0, 0.1);
       pointer-events: none;
       box-sizing: border-box;
     }
+
+    /* Smart Element Highlighter */
+    .qs-highlighter {
+      all: initial;
+      position: absolute;
+      border-width: 2px;
+      border-style: dotted;
+      border-radius: 4px;
+      pointer-events: none;
+      box-sizing: border-box;
+      z-index: 2147483646; 
+      transition: all 0.1s ease-out;
+      display: none;
+    }
+
+    /* Main Menu Container */
     .qs-guide {
       all: initial;
-      color: #1C1B1F;
       font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
       font-weight: 500;
       font-size: 26px;
-      /* Transparent Glass Background */
-      background: rgba(255, 255, 255, 0.95);
+      
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(0, 0, 0, 0.08); /* Light subtle border for container */
-      border-radius: 999px; /* Original Shape */
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      border-style: solid;
+      border-width: 0px; /* Default none, but dark mode adds border */
+      border-radius: 999px;
+      
       pointer-events: auto;
       z-index: 2147483648;
       display: flex;
@@ -54,101 +73,75 @@
       min-width: auto;
       max-width: 500px;
       
-      /* Expressive Motion - Entrance */
       transform-origin: top center;
       animation: expressiveExpand 500ms cubic-bezier(0.2, 0.0, 0.0, 1.0) forwards;
-      opacity: 0; /* Star invisible */
+      opacity: 0; 
     }
 
-    /* Expressive Motion - Exit */
     .qs-guide.qs-hiding {
       animation: expressiveCollapse 300ms cubic-bezier(0.3, 0.0, 0.8, 0.15) forwards !important;
     }
 
-    .qs-guide-header {
-      display: none;
-    }
+    .qs-guide-header { display: none; }
+
     .qs-guide-buttons {
       display: flex;
       align-items: center;
       gap: 8px;
     }
-     /* Global Button Styles */
+
+    /* Generic Button Layout */
     .qs-guide-btn {
       text-align: center;
       all: initial;
       cursor: pointer;
       background: transparent;
-      color: #1a1a1a;
-      padding: 0 20px;
-      border-radius: 999px;
-      font-size: 16px;
-      font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
-      font-weight: 500;
-      border: 1.5px solid #1a1a1a;
-      outline: none;
+      font-family: inherit;
+      font-weight: 700;
+      border-width: 2px;
+      border-style: solid;
       transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
       display: flex;
       align-items: center;
       justify-content: center;
       width: auto;
-      min-width: 56px;
-      height: 56px;
+      min-width: 48px;
+      height: 48px;
       position: relative;
       gap: 8px;
+      box-sizing: border-box;
     }
+
     .qs-guide-btn svg {
       width: 28px;
       height: 28px;
       fill: currentColor;
       transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
-    .qs-guide-btn:hover {
-      background: #1a1a1a;
-      color: #ffffff;
-      border-color: #1a1a1a;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-      transform: translateY(-1px);
-    }
+
     .qs-guide-btn:active {
       transform: scale(0.96);
     }
-    /* Segmented Button Group */
+
+    /* Segmented Group Layout */
     .qs-segmented {
       display: flex;
-      background: transparent;
       border-radius: 999px;
       padding: 0;
-      gap: 8px; /* Slight gap since they are separate outlines now */
-      box-shadow: none;
-      transition: none; /* No interaction needed */
+      gap: 8px; 
       height: auto;
       align-items: center;
     }
-    .qs-segmented:hover {
-      box-shadow: none;
-    }
-    .qs-segmented .qs-guide-btn {
-      background: transparent;
-      box-shadow: none !important;
-      height: 48px;
-      transform: none !important;
-      border-radius: 999px;
-      /* Ensure border is present */
-      border: 1.5px solid #1a1a1a;
-    }
-    /* Visible Area Button (Left) */
+
+    /* Visible Area (Left) */
     .qs-segmented .qs-guide-btn:first-child {
       border-radius: 999px;
       padding: 0 16px;
-      width: auto;
     }
-    /* Download Button (Right) - Inverse Style */
+
+    /* Download Button (Right) */
     .qs-segmented .qs-guide-btn:last-child {
       border-radius: 50%;
-      background: #1a1a1a;
-      color: #ffffff;
-      border: 1.5px solid #1a1a1a;
       width: 48px;
       height: 48px;
       padding: 0;
@@ -158,28 +151,300 @@
       width: 24px;
       height: 24px;
     }
-    .qs-segmented .qs-guide-btn:hover {
-      background: #1a1a1a !important;
-      color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    }
-    /* Specific hover for inverse download button */
-    .qs-segmented .qs-guide-btn:last-child:hover {
-      background: #ffffff !important;
-      color: #1a1a1a !important;
-      border-color: #1a1a1a !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    }
-    .qs-separator {
-      display: none;
-    }
-    /* Standalone Full Page Button */
+
+    /* Full Page Button Layout (Standalone) */
     .qs-guide-buttons > .qs-guide-btn {
-      border-radius: 999px !important;
-      /* Ensure border */
-      border: 1.5px solid #1a1a1a;
+      border-radius: 999px;
       padding: 0 20px;
     }
+
+    /* Theme Toggle Button (Circle override) */
+    .qs-guide-buttons > .qs-theme-toggle {
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      padding: 0;
+      border-radius: 50%;
+      border: none; /* Borderless */
+      margin-left: 0; 
+      background: transparent;
+      box-shadow: none; /* Ensure no shadow */
+    }
+    
+    /* Hover Animation for Theme Toggle */
+    .qs-guide-buttons > .qs-theme-toggle:hover {
+       background: #1F1F1F; 
+       color: #ffffff;
+    }
+    
+    /* Theme Icons */
+    .qs-guide-buttons > .qs-theme-toggle svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.5s cubic-bezier(0.2, 0, 0, 1);
+    }
+    .qs-guide-buttons > .qs-theme-toggle:hover svg {
+      transform: rotate(180deg);
+    }
+
+    .qs-icon-moon { display: none; }
+    .qs-theme-dark .qs-icon-moon { display: block; }
+    .qs-theme-dark .qs-icon-sun { display: none; }
+    
+    /* Dark Theme Toggle Hover */
+    .qs-theme-dark .qs-guide-buttons > .qs-theme-toggle:hover {
+      background: #ffffff !important;
+      color: #1a1a1a !important;
+    }
+
+    /* Toast / Status Layout */
+    .qs-status {
+      left: 50%;
+      bottom: 40px;
+      transform: translate(-50%, 0);
+      padding: 12px 24px;
+      position: fixed;
+      font-family: 'Google Sans', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 16px;
+      border-radius: 999px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      pointer-events: none;
+      z-index: 2147483648;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 90vw;
+      min-height: 52px;
+      opacity: 0;
+      animation: expressiveSlideUp 500ms cubic-bezier(0.2, 0.0, 0.0, 1.0) forwards;
+    }
+    .qs-status.qs-hiding {
+      animation: expressiveSlideDown 300ms cubic-bezier(0.3, 0.0, 0.8, 0.15) forwards !important;
+    }
+    .qs-status.no-anim {
+      animation: none !important;
+      transition: none !important;
+      opacity: 1 !important;
+      transform: translate(-50%, 0) !important;
+    }
+    
+    /* Variables for Standalone SVG Icons (No Container Background) */
+    .qs-status { 
+      --qs-icon-fill: #1F1F1F; 
+      --qs-icon-stroke: #ffffff; 
+    }
+    .qs-theme-dark.qs-status { 
+      --qs-icon-fill: #ffffff; 
+      --qs-icon-stroke: #1a1a1a; 
+    }
+
+    /* Status Icon Layout */
+    .qs-status-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+
+    /* Save Button Layout */
+    .qs-save-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      margin-left: auto;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+      padding: 0;
+      min-width: 40px;
+      pointer-events: auto; /* Fix clickability */
+    }
+    .qs-save-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+
+    /* =========================================
+       2. LIGHT THEME (Default Colors)
+       ========================================= */
+
+    /* Overlay */
+    .qs-ovl { background: rgba(0, 0, 0, 0.02); }
+    
+    /* Selection Box */
+    .qs-box {
+      border-color: #ffffff;
+      box-shadow: 0 0 0 2px #1a1a1a;
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    /* Highlighter */
+    .qs-highlighter {
+      border-color: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    /* Main Menu */
+    .qs-guide {
+      color: #1F1F1F;
+      background: #D6D6D6; 
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Buttons (Shared Light) */
+    .qs-guide-btn {
+      color: #1F1F1F;
+      border-color: #1F1F1F;
+    }
+    
+    /* Button Hover (Shared Light) */
+    .qs-guide-btn:hover {
+      background: #1F1F1F;
+      color: #ffffff;
+      border-color: #1F1F1F;
+      /* box-shadow removed by request */
+    }
+
+    /* Download Button (Right) - Initial Inverse State */
+    .qs-segmented .qs-guide-btn:last-child {
+      background: #1F1F1F;
+      color: #ffffff;
+      border-color: #1F1F1F;
+    }
+    /* Download Button Hover - Inverts back to Menu Background */
+    .qs-segmented .qs-guide-btn:last-child:hover {
+      background: #D6D6D6 !important; 
+      color: #1F1F1F !important;
+      border-color: #1F1F1F !important;
+    }
+    
+    /* Full Page Button specific override needed? 
+       No, it follows shared light logic perfectly now without !important */
+
+    /* Status Toasts (Light) */
+    .qs-status {
+      background: #D6D6D6; /* Match Menu BG */
+      color: #1F1F1F;      /* Match Menu Text */
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); /* Match Menu Shadow */
+    }
+    .qs-status-icon { background: transparent; color: #1F1F1F; }
+
+    .qs-status.qs-success, .qs-status.qs-saved {
+      background: #D6D6D6; color: #1F1F1F;
+    }
+    .qs-status.qs-success .qs-status-icon, .qs-status.qs-saved .qs-status-icon {
+      background: transparent; color: #ffffff;
+    }
+    .qs-status.qs-error {
+      background: #D6D6D6; color: #1F1F1F;
+    }
+    .qs-status.qs-error .qs-status-icon {
+      background: transparent; color: #ffffff;
+    }
+    
+    .qs-save-btn { 
+      background: #1F1F1F; 
+      color: #ffffff;
+      border: 2px solid transparent; 
+    }
+    .qs-save-btn:hover { 
+      background: #D6D6D6; 
+      color: #1F1F1F; 
+      border: 2px solid #1F1F1F; 
+    }
+
+
+    /* =========================================
+       3. DARK THEME (Color Overrides)
+       ========================================= */
+
+    .qs-theme-dark.qs-guide, .qs-theme-dark .qs-guide {
+      background: #1a1a1a;
+      border: 0px solid transparent; /* Remove physical border */
+      color: #ffffff;
+      /* Box Shadow: Outside Border (2px) + Original Drop Shadow */
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25), 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Buttons (Dark) */
+    .qs-theme-dark .qs-guide-btn {
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.8);
+      background: transparent;
+    }
+
+    /* Button Hover (Dark) - Invert to White */
+    .qs-theme-dark .qs-guide-btn:hover {
+      background: #ffffff !important;
+      color: #1a1a1a !important;
+      border-color: #ffffff !important;
+      /* box-shadow removed by request */
+    }
+    
+    /* Download Button (Dark) - Initial Inverse State (White) */
+    .qs-theme-dark .qs-segmented .qs-guide-btn:last-child {
+      background: #ffffff;
+      color: #1a1a1a;
+      border-color: #ffffff;
+    }
+    /* Download Button Hover (Dark) - Invert back to Dark */
+    .qs-theme-dark .qs-segmented .qs-guide-btn:last-child:hover {
+      background: #1a1a1a !important;
+      color: #ffffff !important;
+      border-color: #ffffff !important;
+    }
+    
+    /* Fix Specificity for Standalone Buttons (like Full Page) in Dark Mode 
+       Ensure they don't get stuck with light theme if there's any bleed */
+    .qs-theme-dark .qs-guide-buttons > .qs-guide-btn {
+      border-color: rgba(255, 255, 255, 0.8);
+      color: #ffffff;
+    }
+    .qs-theme-dark .qs-guide-buttons > .qs-guide-btn:hover {
+      background: #ffffff !important;
+      color: #1a1a1a !important;
+    }
+
+    /* Status Toasts (Dark) */
+    .qs-theme-dark.qs-status {
+      background: #1a1a1a;
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+    .qs-theme-dark .qs-status-icon, 
+    .qs-theme-dark .qs-status.qs-success .qs-status-icon,
+    .qs-theme-dark .qs-status.qs-saved .qs-status-icon {
+      background: transparent !important;
+      color: #ffffff !important;
+    }
+    .qs-theme-dark .qs-save-btn,
+    .qs-theme-dark .qs-status.qs-success .qs-save-btn {
+      background: #ffffff !important;
+      color: #1a1a1a !important;
+    }
+    .qs-theme-dark .qs-save-btn:hover,
+    .qs-theme-dark .qs-status.qs-success .qs-save-btn:hover {
+      background: #1a1a1a !important;
+      color: #ffffff !important;
+      border: 1px solid #ffffff;
+    }
+
+    /* =========================================
+       4. ANIMATIONS & EXTRAS
+       ========================================= */
+       
+    /* ... (Keep existing complex animations) ... */
+    
     /* Tooltip */
     .qs-guide-btn::before {
       content: attr(data-tooltip);
@@ -187,7 +452,7 @@
       bottom: -34px;
       left: 50%;
       transform: translateX(-50%) scale(0.8);
-      background: rgba(28, 27, 31, 0.9);
+      background: rgba(28, 27, 31, 0.9); /* Default Dark Tooltip */
       color: white;
       padding: 4px 8px;
       border-radius: 4px;
@@ -204,213 +469,71 @@
       transform: translateX(-50%) scale(1);
       bottom: -40px;
     }
-    .qs-guide-btn.qs-loading {
-      pointer-events: none;
-      opacity: 0.6;
+    
+    /* Dark Theme Tooltip - Invert */
+    .qs-theme-dark .qs-guide-btn::before {
+      background: rgba(255, 255, 255, 0.9);
+      color: #1a1a1a;
     }
-    .qs-guide-btn.qs-loading svg {
-      opacity: 0;
-    }
+
+    /* Loader, HUD, Flash */
+    .qs-guide-btn.qs-loading { pointer-events: none; opacity: 0.6; }
+    .qs-guide-btn.qs-loading svg { opacity: 0; }
     .qs-guide-btn.qs-loading::after {
       content: "";
       position: absolute;
       width: 20px;
       height: 20px;
       border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top: 2px solid white;
+      border-top: 2px solid white; /* Default White loader */
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
     
-    /* ... status styles ... */
-    .qs-status {
-      left: 50%;
-      bottom: 40px;
-      transform: translate(-50%, 0);
-      padding: 12px 24px;
+    /* HUD */
+    .qs-hud {
       position: fixed;
-      color: #1C1B1F;
+      background: #ffffff;
+      color: #1a1a1a;
+      padding: 6px 12px;
+      border-radius: 50px;
+      font-size: 12px;
       font-family: 'Google Sans', system-ui, sans-serif;
       font-weight: 500;
-      font-size: 16px;
-      /* Solid Background - Status */
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      /* Aurora Background - Status */
-      /* background: 
-        radial-gradient(circle at top left, rgba(255, 106, 97, 0.15), transparent 40%),
-        radial-gradient(circle at bottom right, rgba(90, 139, 255, 0.15), transparent 40%),
-        rgba(255, 255, 255, 0.92); */
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      /* border: none; REMOVED */
-      border-radius: 999px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       pointer-events: none;
-      z-index: 2147483648;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      max-width: 90vw;
-      min-height: 56px;
-      
-      /* Expressive Entrance for Toast */
+      z-index: 2147483649;
+      display: none;
+      white-space: nowrap;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      line-height: 1;
+      transform: none !important; 
+    }
+    .qs-theme-dark.qs-hud {
+      background: #1a1a1a;
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Flash */
+    .qs-flash {
+      position: fixed;
+      background: white;
+      z-index: 2147483650;
+      pointer-events: none;
       opacity: 0;
-      animation: expressiveSlideUp 500ms cubic-bezier(0.2, 0.0, 0.0, 1.0) forwards;
+      animation: qs-flash-anim 0.4s ease-out forwards;
     }
-
-    .qs-status.qs-hiding {
-      animation: expressiveSlideDown 300ms cubic-bezier(0.3, 0.0, 0.8, 0.15) forwards !important;
-    }
-
-    .qs-status.no-anim {
-      animation: none !important;
-      transition: none !important;
-      opacity: 1 !important;
-      transform: translate(-50%, 0) !important;
-    }
-
-    .qs-status.qs-success {
-      pointer-events: auto;
-      /* Success: Monochrome */
-      background: #ffffff;
-      border: 1px solid #1a1a1a;
-      color: #1a1a1a;
-    }
-    .qs-status.qs-success .qs-save-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      /* V4: Inverse Style */
-      background: #1a1a1a;
-      color: #ffffff;
-      border: 1.5px solid #1a1a1a;
-      cursor: pointer;
-      margin-left: auto;
-      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-      padding: 0;
-      min-width: 40px;
-    }
-    .qs-status.qs-success .qs-save-btn:hover {
-      background: #ffffff;
-      color: #1a1a1a;
-      transform: scale(1.05);
-      border-color: #1a1a1a;
-    }
-    .qs-status.qs-success .qs-save-btn svg {
-      width: 22px;
-      height: 22px;
-      fill: currentColor;
-    }
-
-    .qs-status.qs-error {
-      /* Error: Monochrome */
-      background: #ffffff;
-      border: 1px solid #1a1a1a;
-      color: #1a1a1a;
-    }
-    .qs-status.qs-saved {
-      /* Saved: Monochrome */
-      background: #ffffff;
-      border: 1px solid #1a1a1a;
-      color: #1a1a1a;
-    }
-    /* Status Icons - V4 Strict Monochrome + V5 Larger Size */
-    .qs-status-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      /* Default neutral style */
-      background: #1a1a1a;
-      border: none;
-      color: #ffffff;
-      font-size: 18px;
-      font-weight: 600;
-      flex-shrink: 0;
-    }
-    .qs-status.qs-success .qs-status-icon {
-      background: #1a1a1a;
-      color: #ffffff;
-    }
-    .qs-status.qs-error .qs-status-icon {
-      background: #1a1a1a;
-      color: #ffffff;
-    }
-    .qs-status.qs-saved .qs-status-icon {
-      background: #1a1a1a;
-      color: #ffffff;
-    }
-    .qs-status.qs-saved .qs-status-icon::after {
-      content: "✓";
-      font-size: 16px;
-    }
-    .qs-status-icon::after {
-      content: "i";
-      font-size: 12px;
-    }
+    .qs-flash.qs-flash-inverse { background: #1a1a1a; }
     
-    /* NEW EXPRESSIVE KEYFRAMES */
+    @keyframes qs-flash-anim { 0% { opacity: 0.6; } 100% { opacity: 0; } }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes expressiveExpand { 0% { transform: translateY(-20px) scale(0.8); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+    @keyframes expressiveCollapse { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-10px) scale(0.9); opacity: 0; } }
+    @keyframes expressiveSlideUp { 0% { transform: translate(-50%, 20px) scale(0.95); opacity: 0; } 100% { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+    @keyframes expressiveSlideDown { 0% { transform: translate(-50%, 0) scale(1); opacity: 1; } 100% { transform: translate(-50%, 15px) scale(0.95); opacity: 0; } }
     
-    /* Expand from a slightly smaller scale + subtle Y offset */
-    @keyframes expressiveExpand {
-      0% { 
-        transform: translateY(-20px) scale(0.8);
-        opacity: 0;
-      }
-      100% { 
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
-    }
-
-    /* Collapse simply and quickly */
-    @keyframes expressiveCollapse {
-      0% { 
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
-      100% { 
-        transform: translateY(-10px) scale(0.9);
-        opacity: 0;
-      }
-    }
-
-    /* Slide Up for Toast - Crisp */
-    @keyframes expressiveSlideUp {
-      0% { 
-        transform: translate(-50%, 20px) scale(0.95);
-        opacity: 0;
-      }
-      100% { 
-        transform: translate(-50%, 0) scale(1);
-        opacity: 1;
-      }
-    }
-
-    /* Slide Down Exit */
-    @keyframes expressiveSlideDown {
-      0% { 
-        transform: translate(-50%, 0) scale(1);
-        opacity: 1;
-      }
-      100% { 
-        transform: translate(-50%, 15px) scale(0.95);
-        opacity: 0;
-      }
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Responsive Scaling for Zoom/Small Screens */
+    /* Responsive */
     @media (max-width: 900px) {
       .qs-guide { padding: 8px; }
       .qs-guide-btn { height: 48px; min-width: 48px; font-size: 14px; padding: 0 16px; }
@@ -418,13 +541,11 @@
       .qs-segmented .qs-guide-btn { height: 40px; }
       .qs-segmented .qs-guide-btn:last-child { width: 40px; height: 40px; min-width: 40px; }
       .qs-segmented .qs-guide-btn:last-child svg { width: 20px; height: 20px; }
-      
       .qs-status { padding: 10px 20px; min-height: 48px; font-size: 14px; bottom: 32px; }
       .qs-status-icon { width: 24px; height: 24px; font-size: 14px; }
-      .qs-status.qs-success .qs-save-btn { width: 36px; height: 36px; min-width: 36px; }
-      .qs-status.qs-success .qs-save-btn svg { width: 20px; height: 20px; }
+      .qs-save-btn { width: 36px; height: 36px; min-width: 36px; }
+      .qs-save-btn svg { width: 20px; height: 20px; }
     }
-
     @media (max-width: 600px) {
       .qs-guide { padding: 6px; }
       .qs-guide-btn { height: 40px; min-width: 40px; font-size: 13px; padding: 0 12px; }
@@ -432,64 +553,32 @@
       .qs-segmented .qs-guide-btn { height: 32px; }
       .qs-segmented .qs-guide-btn:last-child { width: 32px; height: 32px; min-width: 32px; }
       .qs-segmented .qs-guide-btn:last-child svg { width: 16px; height: 16px; }
-
       .qs-status { padding: 8px 16px; min-height: 40px; font-size: 13px; bottom: 24px; }
       .qs-status-icon { width: 20px; height: 20px; font-size: 12px; }
-      .qs-status.qs-success .qs-save-btn { width: 32px; height: 32px; min-width: 32px; }
-      .qs-status.qs-success .qs-save-btn svg { width: 16px; height: 16px; }
+      .qs-save-btn { width: 32px; height: 32px; min-width: 32px; }
+      .qs-save-btn svg { width: 16px; height: 16px; }
     }
 
-    /* V6: High Class Animations */
+    /* Animations (Eye, Bounce, Full Page corners) */
+    @keyframes eyeBlink { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.1); } }
+    @keyframes eyeLook { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-1px, 0); } 75% { transform: translate(1px, 0); } }
+    .qs-guide-btn:hover .eye-lid { animation: eyeBlink 0.4s ease-in-out; transform-origin: center; }
+    .qs-guide-btn:hover .eye-pupil { animation: eyeLook 0.8s ease-in-out; }
     
-    /* Eye Blink & Pupil Dilation */
-    @keyframes eyeBlink {
-      0%, 100% { transform: scaleY(1); }
-      50% { transform: scaleY(0.1); }
-    }
-    @keyframes eyeLook {
-      0%, 100% { transform: translate(0, 0); }
-      25% { transform: translate(-1px, 0); }
-      75% { transform: translate(1px, 0); }
-    }
-    .qs-guide-btn:hover .eye-lid {
-      animation: eyeBlink 0.4s ease-in-out;
-      transform-origin: center;
-    }
-    .qs-guide-btn:hover .eye-pupil {
-      animation: eyeLook 0.8s ease-in-out;
-    }
+    @keyframes dlBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+    .qs-guide-btn:hover .dl-arrow, .qs-save-btn:hover .dl-arrow { animation: dlBounce 0.6s ease-in-out; }
 
-    /* Download Arrow Bounce */
-    @keyframes dlBounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(3px); }
-    }
-    .qs-guide-btn:hover .dl-arrow,
-    .qs-save-btn:hover .dl-arrow {
-      animation: dlBounce 0.6s ease-in-out;
-    }
-
-    /* Full Page Individual Corner Animations (Scaled for 960px ViewBox) */
     @keyframes cornerMoveTL { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(40px, 40px); } }
     @keyframes cornerMoveTR { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-40px, 40px); } }
     @keyframes cornerMoveBR { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-40px, -40px); } }
     @keyframes cornerMoveBL { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(40px, -40px); } }
-
-    /* Line Wipe Animation (Left to Right) */
-    @keyframes lineWipe {
-      0% { clip-path: inset(0 100% 0 0); opacity: 0; }
-      20% { opacity: 1; }
-      100% { clip-path: inset(0 0 0 0); opacity: 1; }
-    }
-
+    @keyframes lineWipe { 0% { clip-path: inset(0 100% 0 0); opacity: 0; } 20% { opacity: 1; } 100% { clip-path: inset(0 0 0 0); opacity: 1; } }
+    
     .qs-guide-btn:hover .fp-tl { animation: cornerMoveTL 0.5s ease-in-out; }
     .qs-guide-btn:hover .fp-tr { animation: cornerMoveTR 0.5s ease-in-out; }
     .qs-guide-btn:hover .fp-br { animation: cornerMoveBR 0.5s ease-in-out; }
     .qs-guide-btn:hover .fp-bl { animation: cornerMoveBL 0.5s ease-in-out; }
-    
-    .qs-guide-btn:hover .fp-lines {
-      animation: lineWipe 0.6s cubic-bezier(0.2, 0, 0, 1);
-    }
+    .qs-guide-btn:hover .fp-lines { animation: lineWipe 0.6s cubic-bezier(0.2, 0, 0, 1); }
   `;
 
   function makeShadowOverlay(tag, className, innerHTML = "") {
@@ -513,13 +602,18 @@
     return { host, el, shadow };
   }
 
-  let overlayHost, boxHost, statusHost, guideHost;
-  let overlay, box, statusEl, guideEl, guideShadow;
+  let overlayHost, boxHost, statusHost, guideHost, highlighterHost, hudHost;
+  let overlay, box, statusEl, guideEl, guideShadow, highlighterEl, hudEl;
   let dragging = false;
+  let isMoving = false; // Spacebar Drag
   let startX = 0,
     startY = 0;
+  // Track last mouse pos for moving logic
+  let lastMouseX = 0,
+    lastMouseY = 0;
   let rect = { left: 0, top: 0, width: 0, height: 0 };
   let lastBlob = null;
+  let highlightedRect = null;
 
   function setCrosshairCursor() {
     document.body.style.cursor = "crosshair";
@@ -547,6 +641,33 @@
       statusHost.style.display = "none";
     }
 
+    if (!highlighterHost) {
+      const { host, el } = makeShadowOverlay("div", "qs-highlighter");
+      highlighterHost = host;
+      highlighterEl = el;
+      // Host needs to be clickable? No, pointer-events none on host, but we need to click *through* it?
+      // Actually makeShadowOverlay sets pointer-events: none on host.
+      // We want mousemove to pass through to the page elements so we can detect them.
+      // So highlighterHost stays pointer-events: none.
+    }
+
+    if (!hudHost) {
+      const { host, el } = makeShadowOverlay("div", "qs-hud");
+      hudHost = host;
+      hudEl = el;
+      // Initial style for corner rounding
+      hudEl.style.borderBottomRightRadius = "6px";
+    }
+
+    // Apply Theme to HUD immediately if it exists (captured from previous calls)
+    if (hudEl) {
+      if (shouldUseDarkMode()) {
+        hudEl.classList.add("qs-theme-dark");
+      } else {
+        hudEl.classList.remove("qs-theme-dark");
+      }
+    }
+
     if (!guideHost) {
       const { host, el, shadow } = makeShadowOverlay("div", "qs-guide");
       guideHost = host;
@@ -556,21 +677,21 @@
       guideEl.innerHTML = `
         <div class="qs-guide-buttons">
           <div class="qs-segmented">
-            <button class="qs-guide-btn" data-action="capture-visible" data-tooltip="Copy visible area">
+            <button class="qs-guide-btn" data-action="capture-visible" data-tooltip="Copy Visible">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path class="eye-lid" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
                 <circle class="eye-pupil" cx="12" cy="12" r="3"/>
               </svg>
               <span>Visible Area</span>
             </button>
-            <button class="qs-guide-btn" data-action="capture-download" data-tooltip="Download screenshot">
+            <button class="qs-guide-btn" data-action="capture-download" data-tooltip="Save & Copy">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path class="dl-arrow" d="M19 9h-4V3H9v6H5l7 7 7-7z"/>
                 <path class="dl-bar" d="M5 18v2h14v-2H5z"/>
               </svg>
             </button>
           </div>
-          <button class="qs-guide-btn" data-action="capture-full" data-tooltip="Capture full page">
+          <button class="qs-guide-btn" data-action="capture-full" data-tooltip="Save Full Page">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
               <!-- Split Corners (Original Material Icon) -->
               <path class="fp-corner fp-tl" d="M67-743.87V-933h189.13v73H140v116.13H67Z"/>
@@ -581,6 +702,16 @@
               <path class="fp-lines" d="M273-233h414v-494H273v494Zm0 79.22q-31.38 0-55.3-23.92-23.92-23.92-23.92-55.3v-494q0-31.38 23.92-55.3 23.92-23.92 55.3-23.92h414q31.38 0 55.3 23.92 23.92 23.92 23.92 55.3v494q0 31.38-23.92 55.3-23.92 23.92-55.3 23.92H273Zm94.74-413.96h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09ZM273-233v-494 494Z"/>
             </svg>
             <span>Full Page</span>
+          </button>
+          <button class="qs-guide-btn qs-theme-toggle" data-action="toggle-theme" data-tooltip="Toggle Theme">
+            <!-- Moon (Show in Light Mode) -->
+            <svg class="qs-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-5.4-5.4 5.4 5.4 0 0 1 1.76-3.79A8.93 8.93 0 0 0 12 3Z"/>
+            </svg>
+            <!-- Sun (Show in Dark Mode) -->
+            <svg class="qs-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 24 24">
+              <path d="M10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 2a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-15a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V1a1 1 0 0 1 1-1zm0 16a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1zM1 9h2a1 1 0 1 1 0 2H1a1 1 0 0 1 0-2zm16 0h2a1 1 0 0 1 0 2h-2a1 1 0 0 1 0-2zm.071-6.071a1 1 0 0 1 0 1.414l-1.414 1.414a1 1 0 1 1-1.414-1.414l1.414-1.414a1 1 0 0 1 1.414 0zM5.757 14.243a1 1 0 0 1 0 1.414L4.343 17.07a1 1 0 1 1-1.414-1.414l1.414-1.414a1 1 0 0 1 1.414 0zM4.343 2.929l1.414 1.414a1 1 0 0 1-1.414 1.414L2.93 4.343A1 1 0 0 1 4.343 2.93zm11.314 11.314l1.414 1.414a1 1 0 0 1-1.414 1.414l-1.414-1.414a1 1 0 1 1 1.414-1.414z"/>
+            </svg>
           </button>
         </div>
       `;
@@ -598,15 +729,99 @@
 
       const fullBtn = guideShadow.querySelector('[data-action="capture-full"]');
       fullBtn.onclick = handleCaptureFullPage;
+
+      const themeBtn = guideShadow.querySelector(
+        '[data-action="toggle-theme"]',
+      );
+      themeBtn.onclick = handleThemeToggle;
     }
 
     // Ensure guide is visible AND RESET ANIMATION CLASS
     if (guideHost) {
       guideHost.style.display = "flex";
       guideEl.classList.remove("qs-hiding");
+
+      // Apply initial theme
+      applyTheme(currentUserTheme);
+
       // Force Reflow to restart enter animation if needed
       void guideEl.offsetWidth;
     }
+  }
+
+  // --- Theme Management ---
+  let currentUserTheme = "light"; // Default
+
+  // Load preference immediately
+  if (chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get("userTheme", (data) => {
+      if (data.userTheme) {
+        currentUserTheme = data.userTheme;
+      }
+    });
+  }
+
+  function handleThemeToggle() {
+    currentUserTheme = currentUserTheme === "light" ? "dark" : "light";
+    applyTheme(currentUserTheme);
+    chrome.storage.local.set({ userTheme: currentUserTheme });
+  }
+
+  function applyTheme(theme) {
+    if (!guideEl) return;
+    if (theme === "dark") {
+      guideEl.classList.add("qs-theme-dark");
+      if (hudEl) hudEl.classList.add("qs-theme-dark");
+    } else {
+      guideEl.classList.remove("qs-theme-dark");
+      if (hudEl) hudEl.classList.remove("qs-theme-dark");
+    }
+  }
+
+  function shouldUseDarkMode() {
+    // Deprecated: relying on user preference now
+    return currentUserTheme === "dark";
+  }
+
+  function isPageDark() {
+    // 1. Check Page Brightness.
+    try {
+      const bodyColor = window.getComputedStyle(document.body).backgroundColor;
+      const rgb = bodyColor.match(/\d+/g);
+      if (rgb && rgb.length >= 3) {
+        // Luminance formula: 0.2126*R + 0.7152*G + 0.0722*B
+        const r = parseInt(rgb[0]);
+        const g = parseInt(rgb[1]);
+        const b = parseInt(rgb[2]);
+        const alpha = rgb.length > 3 ? parseFloat(rgb[3]) : 1;
+
+        // If transparent, assume Light mode (most sites default to white bg)
+        // OR check HTML tag? Let's check HTML tag if body is transparent.
+        if (alpha < 0.1) {
+          // Check html tag
+          const htmlColor = window.getComputedStyle(
+            document.documentElement,
+          ).backgroundColor;
+          const rgbH = htmlColor.match(/\d+/g);
+          if (rgbH && rgbH.length >= 3) {
+            const rH = parseInt(rgbH[0]);
+            const gH = parseInt(rgbH[1]);
+            const bH = parseInt(rgbH[2]);
+            const lumaH = 0.2126 * rH + 0.7152 * gH + 0.0722 * bH;
+            return lumaH < 128; // < 128 is Dark
+          }
+          // if html is also transparent, default to Light?
+          // Users usually see White background if everything is transparent.
+          return false;
+        }
+
+        const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        return luma < 128; // Dark Page -> Use Dark Mode UI (White Flash)
+      }
+    } catch (e) {
+      // Fallback
+    }
+    return false; // Default to Light Mode (Black Flash)
   }
 
   // ... cleanup ...
@@ -633,6 +848,44 @@
     statusEl.innerHTML = "";
     const iconEl = document.createElement("div");
     iconEl.className = "qs-status-icon";
+
+    // Select Icon based on Type/Message
+    let iconSvg = "";
+    // Info / Default
+    iconSvg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.17,15.4l-5.91-9.85C14.48,4.25,13.3,3.51,12,3.51S9.52,4.25,8.74,5.54L2.83,15.4c-0.44,0.73-0.66,1.49-0.66,2.21c0,0.57,0.14,1.13,0.42,1.62C3.23,20.35,4.47,21,6,21h12c1.53,0,2.77-0.65,3.41-1.77c0.28-0.49,0.42-1.02,0.42-1.58C21.84,16.91,21.62,16.14,21.17,15.4z M12,8.45c0.85,0,1.55,0.7,1.55,1.55c0,0.85-0.69,1.55-1.55,1.55c-0.85,0-1.55-0.7-1.55-1.55C10.45,9.14,11.14,8.45,12,8.45z M13.69,16.91c-0.03,0.04-0.8,0.92-2.07,0.92l-0.15,0c-0.51-0.03-0.93-0.25-1.18-0.63c-0.31-0.47-0.36-1.11-0.12-1.82l0.41-1.22c0.23-0.68,0.01-0.79-0.11-0.85l-0.14-0.02c-0.25,0-0.6,0.15-0.71,0.21c-0.1,0.05-0.23,0.03-0.31-0.07c-0.07-0.1-0.07-0.23,0.01-0.32c0.03-0.04,0.87-0.99,2.22-0.91c0.51,0.03,0.93,0.25,1.18,0.63c0.32,0.47,0.36,1.11,0.12,1.83l-0.41,1.22c-0.23,0.68-0.01,0.79,0.11,0.85l0.14,0.02c0.25,0,0.6-0.15,0.71-0.2c0.11-0.06,0.23-0.03,0.31,0.07C13.77,16.69,13.77,16.82,13.69,16.91z"/></svg>';
+
+    if (type === "error") {
+      // Cross SVG
+      iconSvg =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 51.976 51.976"><path d="M44.373,7.603c-10.137-10.137-26.632-10.138-36.77,0c-10.138,10.138-10.137,26.632,0,36.77s26.632,10.138,36.77,0C54.51,34.235,54.51,17.74,44.373,7.603z M36.241,36.241c-0.781,0.781-2.047,0.781-2.828,0l-7.425-7.425l-7.778,7.778c-0.781,0.781-2.047,0.781-2.828,0c-0.781-0.781-0.781-2.047,0-2.828l7.778-7.778l-7.425-7.425c-0.781-0.781-0.781-2.048,0-2.828c0.781-0.781,2.047-0.781,2.828,0l7.425,7.425l7.071-7.071c0.781-0.781,2.047-0.781,2.828,0c0.781,0.781,0.781,2.047,0,2.828l-7.071,7.071l7.425,7.425C37.022,34.194,37.022,35.46,36.241,36.241z"/></svg>';
+    } else if (type === "success" || type === "saved") {
+      // Tick SVG (Standalone Split Path: Filled Shield + White Tick Stroke)
+      // This ensures "Dark Inside" (Shield) and "White Tick" without needing a container background
+      iconSvg =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><!-- Shield Base --><path d="M20 11.9999C20 16.9083 14.646 20.4783 12.698 21.6147C12.4766 21.7439 12.3659 21.8085 12.2097 21.842C12.0884 21.868 11.9116 21.868 11.7903 21.842C11.6341 21.8085 11.5234 21.7439 11.302 21.6147C9.35396 20.4783 4 16.9083 4 11.9999V7.21747C4 6.41796 4 6.0182 4.13076 5.67457C4.24627 5.37101 4.43398 5.10015 4.67766 4.8854C4.9535 4.64231 5.3278 4.50195 6.0764 4.22122L11.4382 2.21054C11.6461 2.13258 11.75 2.0936 11.857 2.07815C11.9518 2.06444 12.0482 2.06444 12.143 2.07815C12.25 2.0936 12.3539 2.13258 12.5618 2.21054L17.9236 4.22122C18.6722 4.50195 19.0465 4.64231 19.3223 4.8854C19.566 5.10015 19.7537 5.37101 19.8692 5.67457C20 6.0182 20 6.41796 20 7.21747V11.9999Z" fill="var(--qs-icon-fill)" stroke="none"/><!-- Tick Mark --><path d="M9 11.4999L11 13.4999L15.5 8.99987" stroke="var(--qs-icon-stroke)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+    }
+
+    // Set SVG content (ensure fill/stroke inherits correctly)
+    iconEl.innerHTML = iconSvg;
+    // Force SVG styling to fit container
+    const svgEl = iconEl.querySelector("svg");
+    if (svgEl) {
+      svgEl.style.width = "100%";
+      svgEl.style.height = "100%";
+      // Note: Stroke/Fill logic is now handled inline in SVG for the tick
+      // Note: Stroke/Fill logic is now handled inline in SVG for the tick
+      if (!iconSvg.includes("var(--qs-icon-fill")) {
+        // Fallback for Info/Error which are standard filled or stroked
+        if (iconSvg.includes("stroke") && !iconSvg.includes("fill")) {
+          svgEl.style.fill = "none";
+          svgEl.style.stroke = "currentColor";
+        } else {
+          svgEl.style.fill = "currentColor";
+        }
+      }
+    }
+
     statusEl.appendChild(iconEl);
 
     const textSpan = document.createElement("span");
@@ -643,8 +896,17 @@
       statusEl.classList.add("qs-success");
       const saveBtn = document.createElement("button");
       saveBtn.className = "qs-save-btn";
+      // Download SVG
       saveBtn.innerHTML =
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="dl-arrow" d="M19 9h-4V3H9v6H5l7 7 7-7z"/><path class="dl-bar" d="M5 18v2h14v-2H5z"/></svg>';
+      // Fix svg size in button
+      const downSvg = saveBtn.querySelector("svg");
+      if (downSvg) {
+        downSvg.style.width = "20px";
+        downSvg.style.height = "20px";
+        downSvg.style.fill = "currentColor";
+      }
+
       saveBtn.onclick = () => handleSaveAction();
       statusEl.appendChild(saveBtn);
       timeout = 5000; // Increased timeout for success
@@ -658,6 +920,13 @@
 
     statusHost.style.display = "";
     statusEl.style.display = "flex";
+
+    // Auto-Theme for Status
+    if (shouldUseDarkMode()) {
+      statusEl.classList.add("qs-theme-dark");
+    } else {
+      statusEl.classList.remove("qs-theme-dark");
+    }
 
     currentStatus = type;
 
@@ -688,6 +957,16 @@
     overlayHost = null;
     overlay = null;
 
+    if (highlighterHost && highlighterHost.parentNode)
+      highlighterHost.parentNode.removeChild(highlighterHost);
+    highlighterHost = null;
+    highlighterEl = null;
+    highlightedRect = null;
+
+    if (hudHost && hudHost.parentNode) hudHost.parentNode.removeChild(hudHost);
+    hudHost = null;
+    hudEl = null;
+
     // Animate guide out
     if (guideEl && guideHost) {
       guideEl.classList.add("qs-hiding");
@@ -707,6 +986,7 @@
     }
 
     removeListeners();
+    isMoving = false;
   }
 
   function handleSaveAction() {
@@ -716,7 +996,7 @@
     const url = URL.createObjectURL(lastBlob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `screenshot-${new Date().toISOString().replace(/[:.]/g, "-")}.png`;
+    a.download = getSmartFilename("screenshot");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -744,7 +1024,7 @@
 
         setTimeout(() => {
           // Stage 3: Change content and morph back
-          textSpan.textContent = "Image saved successfully";
+          textSpan.textContent = "Image Saved";
           statusEl.classList.remove("qs-success");
           statusEl.classList.add("qs-saved");
           saveBtn.remove();
@@ -818,7 +1098,8 @@
       await navigator.clipboard.write([
         new ClipboardItem({ "image/png": lastBlob }),
       ]);
-      setStatus("Visible area copied to clipboard", 5000, "success");
+      triggerFlash(); // Full screen flash for visible area
+      setStatus("Copied & Saved", 5000, "success");
     } catch (err) {
       console.error("handleCaptureVisible error:", err);
       setStatus("Capture failed", 3000, "error");
@@ -861,13 +1142,15 @@
       const url = URL.createObjectURL(lastBlob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `screenshot-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, "-")}.png`;
+      a.download = getSmartFilename("screenshot");
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setStatus("Copied to clipboard and downloaded", 5000, "saved");
+      triggerFlash(); // Flash on Download
+
+      setStatus("Copied to clipboard", 5000, "saved");
     } catch (err) {
       console.error("handleCaptureAndDownload error:", err);
       setStatus("Capture failed", 3000, "error");
@@ -880,6 +1163,8 @@
     if (guideHost) guideHost.style.display = "none";
     if (statusHost) statusHost.style.display = "none";
     if (boxHost) boxHost.style.display = "none";
+    if (highlighterHost) highlighterHost.style.display = "none";
+    if (hudHost) hudHost.style.display = "none";
     await new Promise((r) => requestAnimationFrame(r));
     await new Promise((r) => setTimeout(r, 100));
   }
@@ -1189,6 +1474,12 @@
 
       // Hide UI before capture
       if (guideHost) guideHost.style.display = "none";
+
+      // HIDE CURSOR IMMEDIATELY (Global Override)
+      const originalCursor = document.documentElement.style.cursor;
+      document.documentElement.style.cursor = "none !important";
+      document.body.style.cursor = "none !important";
+
       await new Promise((r) => requestAnimationFrame(r));
 
       // Clear all hover states EARLY so the page has time to process
@@ -1258,14 +1549,21 @@
       const url = URL.createObjectURL(lastBlob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `fullpage-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, "-")}.png`;
+      a.download = getSmartFilename("fullpage");
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       updateBadge("✓", "#198754");
+      updateBadge("✓", "#198754");
       setTimeout(() => updateBadge(""), 3000);
+      // triggerFlash(); // Full screen flash REMOVED per user request
+
+      // RESTORE CURSOR
+      document.documentElement.style.cursor = "";
+      document.body.style.cursor = "";
+
       cleanup();
     } catch (err) {
       console.error("Full page capture error:", err);
@@ -1280,7 +1578,12 @@
         btn.querySelector(".qs-progress-text")?.remove();
         if (originalIcon) btn.innerHTML = originalIcon;
       }
-      setStatus("Capture failed", 3000, "error");
+
+      // RESTORE CURSOR ON ERROR
+      document.documentElement.style.cursor = "";
+      document.body.style.cursor = "";
+
+      setStatus("Capture Failed", 3000, "error");
       if (guideHost) guideHost.style.display = "flex";
     }
   }
@@ -1302,8 +1605,11 @@
     e.stopPropagation();
     e.stopImmediatePropagation();
     dragging = true;
+    isMoving = false; // Reset moving state on new drag
     startX = e.clientX;
     startY = e.clientY;
+    lastMouseX = startX;
+    lastMouseY = startY;
     rect.left = startX;
     rect.top = startY;
     rect.width = 0;
@@ -1317,19 +1623,231 @@
     updateBox();
   }
 
+  let snapTimer = null;
+
   function onMouseMove(e) {
-    if (!dragging) return;
     const x = e.clientX;
     const y = e.clientY;
-    const left = Math.min(startX, x);
-    const top = Math.min(startY, y);
-    const width = Math.abs(x - startX);
-    const height = Math.abs(y - startY);
-    rect.left = left;
-    rect.top = top;
+
+    // Spacebar Move Logic
+    // If Space is held, we MOVE the rect instead of resizing
+    // We check space key state via e.code or a tracked variable?
+    // MouseEvent has no e.code for held keys reliably except modifier flags (e.shiftKey, e.altKey, e.ctrlKey, e.metaKey).
+    // Space is NOT a modifier. We must rely on 'keydown/keyup' tracking or e.getModifierState?
+    // User requested: "While dragging, if user holds SPACEBAR..."
+    // We'll use a global tracker for Space since it's not in standard modifiers.
+
+    if (dragging && isSpacePressed) {
+      if (!isMoving) {
+        isMoving = true; // Start moving
+      }
+      const dx = x - lastMouseX;
+      const dy = y - lastMouseY;
+
+      rect.left += dx;
+      rect.top += dy;
+
+      // Update startX/startY so resizing resumes from new position relative to anchor
+      startX += dx;
+      startY += dy;
+
+      lastMouseX = x;
+      lastMouseY = y;
+
+      updateBox();
+      updateHud(rect, x, y);
+      return;
+    } else {
+      isMoving = false;
+      lastMouseX = x;
+      lastMouseY = y;
+    }
+
+    if (!dragging) {
+      if (box) box.style.display = "none";
+
+      // DEBOUNCE: Clear previous timer
+      if (snapTimer) clearTimeout(snapTimer);
+
+      // FIX GHOST CAPTURE: Clear state immediately when moving
+      if (highlighterEl) highlighterEl.style.display = "none";
+      highlightedRect = null;
+
+      // OPT-IN CHECK: STRICTLY Ctrl (or Meta) key only
+      const isSnapping = e.ctrlKey || e.metaKey;
+      if (!isSnapping) {
+        return; // Stop here if Alt is not held
+      }
+
+      // Set new timer for "Hover Intent"
+      snapTimer = setTimeout(() => {
+        // Smart Element Snapping Logic
+        const elements = document.elementsFromPoint(x, y);
+        let bestCandidate = null;
+
+        // Helper to determine if an element is worth snapping to
+        const isSignificant = (el) => {
+          const r = el.getBoundingClientRect();
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+
+          // 1. Min Size Check
+          if (r.width < 50 || r.height < 50) return false;
+
+          // 2. Viewport Visiblity Check
+          if (
+            r.top < -1 ||
+            r.left < -1 ||
+            r.bottom > vh + 1 ||
+            r.right > vw + 1
+          )
+            return false;
+
+          const tagName = el.tagName.toUpperCase();
+          if (tagName === "BODY" || tagName === "HTML") return false;
+
+          // 3. Media Exception (Media tags can be big, everything else cannot)
+          const isMedia = [
+            "IMG",
+            "VIDEO",
+            "SVG",
+            "CANVAS",
+            "IFRAME",
+            "EMBED",
+            "OBJECT",
+          ].includes(tagName);
+          const isInteractive = [
+            "INPUT",
+            "TEXTAREA",
+            "SELECT",
+            "BUTTON",
+            "A",
+          ].includes(tagName);
+
+          // 4. UNIVERSAL SIZE CAP (The "No Giants" Rule)
+          // If it's NOT media, and it's huge (> 70% of screen), REJECT IT.
+          if (!isMedia) {
+            if (r.width > vw * 0.7 || r.height > vh * 0.7) return false;
+          }
+
+          const style = window.getComputedStyle(el);
+          if (
+            style.display === "none" ||
+            style.visibility === "hidden" ||
+            style.opacity === "0"
+          )
+            return false;
+
+          // 5. Media & Interactive are always significant (if they passed size check, though media bypasses it)
+          if (isMedia || isInteractive) return true;
+
+          // 6. Styling Check
+          const hasBgImage = style.backgroundImage !== "none";
+          const hasBgColor =
+            style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+            style.backgroundColor !== "transparent";
+          const hasBorder =
+            style.borderWidth !== "0px" &&
+            style.borderStyle !== "none" &&
+            style.borderColor !== "transparent";
+
+          // 7. UNIVERSAL "Hollow Box" Killer
+          // If it's a large box (>300px) with NO border and NO image, it's likely just a background container.
+          if (r.width > 300 && r.height > 300) {
+            if (!hasBorder && !hasBgImage) {
+              // If it has a color but no text -> Reject
+              // If it has nothing -> Reject
+              const text = el.innerText ? el.innerText.trim() : "";
+              if (text.length < 20) return false; // "Small Text Trap" applied universally
+            }
+          }
+
+          if (hasBgImage || hasBgColor || hasBorder) return true;
+
+          // 8. Final Content Fallback
+          if (el.innerText && el.innerText.trim().length > 0) return true;
+
+          return false;
+        };
+
+        for (const candidate of elements) {
+          const isExtensionUi =
+            candidate === guideHost ||
+            candidate === statusHost ||
+            candidate === overlayHost ||
+            candidate === boxHost ||
+            candidate === highlighterHost ||
+            candidate === guideEl ||
+            candidate === statusEl ||
+            candidate === box ||
+            candidate === highlighterEl ||
+            candidate.closest?.(".qs-guide") ||
+            candidate.closest?.(".qs-status") ||
+            candidate.classList?.contains("qs-ovl");
+
+          if (!isExtensionUi) {
+            if (isSignificant(candidate)) {
+              bestCandidate = candidate;
+              break;
+            }
+          }
+        }
+
+        if (bestCandidate && highlighterEl) {
+          const r = bestCandidate.getBoundingClientRect();
+          highlighterEl.style.display = "block";
+          highlighterEl.style.left = r.left + "px";
+          highlighterEl.style.top = r.top + "px";
+          highlighterEl.style.width = r.width + "px";
+          highlighterEl.style.height = r.height + "px";
+          highlightedRect = r;
+          // For smart snapping, mouse is at (x,y). Use that as "cursor" for opposite calculation.
+          updateHud(r, x, y);
+        } else {
+          // No valid target found
+          if (highlighterEl) highlighterEl.style.display = "none";
+          highlightedRect = null;
+          if (hudEl) hudEl.style.display = "none";
+        }
+      }, 300); // 300ms Debounce Delay
+
+      return;
+    }
+
+    // If dragging, hide highlighter immediately
+    if (highlighterEl) highlighterEl.style.display = "none";
+    highlightedRect = null;
+    if (box) box.style.display = "block";
+
+    let width, height;
+
+    if (e.shiftKey) {
+      // Square Lock
+      const rawW = Math.abs(x - startX);
+      const rawH = Math.abs(y - startY);
+      const size = Math.max(rawW, rawH);
+      width = size;
+      height = size;
+
+      // Adjust left/top based on direction
+      // If x < startX, left = startX - size
+      // If y < startY, top = startY - size
+      rect.left = x < startX ? startX - size : startX;
+      rect.top = y < startY ? startY - size : startY;
+    } else {
+      const left = Math.min(startX, x);
+      const top = Math.min(startY, y);
+      width = Math.abs(x - startX);
+      height = Math.abs(y - startY);
+      rect.left = left;
+      rect.top = top;
+    }
+
     rect.width = width;
     rect.height = height;
     updateBox();
+    // Use current mouse position (x, y) for opposite calculation
+    updateHud(rect, x, y);
   }
 
   function onMouseUp(e) {
@@ -1342,16 +1860,27 @@
     dragging = false;
     updateBox();
 
-    // If click (no drag), cancel selection
+    // If click (no drag), cancel selection OR capture snapped element
     if (rect.width < 5 || rect.height < 5) {
-      setStatus("Selection canceled", 1500);
+      if (highlightedRect) {
+        // Smart Capture!
+        captureAndCrop(highlightedRect).finally(() => {
+          cleanup();
+          triggerFlash(highlightedRect);
+          setStatus("Copied & Saved", 5000, "success");
+        });
+        return;
+      }
+
+      setStatus("Canceled", 1500);
       cleanup();
       return;
     }
 
     captureAndCrop(rect).finally(() => {
       cleanup();
-      setStatus("Selection copied to clipboard", 5000, "success");
+      // triggerFlash(rect); // Removed per user: No flash on selection
+      setStatus("Copied & Saved", 5000, "success");
     });
   }
 
@@ -1363,12 +1892,105 @@
     }
   }
 
+  // Right-Click to Cancel
+  window.addEventListener("contextmenu", (e) => {
+    if (dragging || (rect.width > 0 && rect.height > 0)) {
+      e.preventDefault();
+      setStatus("Canceled", 900);
+      cleanup();
+    }
+  });
+
+  // Track Spacebar
+  let isSpacePressed = false;
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.code === "Space") {
+        isSpacePressed = true;
+        // Prevent scrolling if dragging
+        if (dragging) e.preventDefault();
+      }
+    },
+    { capture: true },
+  ); // Capture to prevent page scroll blocking us
+
+  window.addEventListener(
+    "keyup",
+    (e) => {
+      if (e.code === "Space") {
+        isSpacePressed = false;
+        isMoving = false;
+      }
+    },
+    { capture: true },
+  );
+
   function updateBox() {
     if (!box) return;
     box.style.left = rect.left + "px";
     box.style.top = rect.top + "px";
     box.style.width = rect.width + "px";
     box.style.height = rect.height + "px";
+  }
+
+  function updateHud(rect, x, y) {
+    if (!hudEl || !hudHost) return;
+
+    // Premium "Floating Pill" Positioning
+    // Top-Left corner, slightly separated.
+    const gap = 8;
+    const hudHeight = 26; // Approx
+
+    let top = rect.top + gap;
+    let left = rect.left + gap;
+
+    // Smart Flip: If box is too narrow or short, move HUD outside to avoid overcrowding
+    // Or if dragging up/left, keep it attached to the visual top-left.
+
+    // Simplest Premium: Inside Top-Left.
+    // Clip check: If box < 100px wide, move outside top.
+    if (rect.width < 100 || rect.height < 40) {
+      top = rect.top - hudHeight - gap;
+    }
+
+    hudEl.style.top = top + "px";
+    hudEl.style.left = left + "px";
+    hudEl.style.transform = ""; // Reset custom transforms
+
+    // Position fixed, so coordinates are client relative.
+    const w = Math.round(rect.width);
+    const h = Math.round(rect.height);
+    hudEl.textContent = `${w} x ${h}`;
+    hudEl.style.display = "block";
+    hudHost.style.display = "block";
+  }
+
+  function triggerFlash(targetRect = null) {
+    const { host, el } = makeShadowOverlay("div", "qs-flash");
+
+    // Smart Flash: White on Dark Page, Black on Light Page
+    // Use isPageDark() irrespective of extension theme
+    if (!isPageDark()) {
+      el.classList.add("qs-flash-inverse"); // Light Page -> Black Flash
+    }
+
+    if (targetRect) {
+      el.style.left = targetRect.left + "px";
+      el.style.top = targetRect.top + "px";
+      el.style.width = targetRect.width + "px";
+      el.style.height = targetRect.height + "px";
+      el.style.position = "absolute"; // Important for rect positioning
+      el.style.borderRadius = "6px"; // Match selection box roundness
+    } else {
+      el.style.inset = "0"; // Full screen
+      el.style.borderRadius = "0";
+    }
+
+    // Auto remove after animation
+    setTimeout(() => {
+      if (host && host.parentNode) host.parentNode.removeChild(host);
+    }, 450); // Slightly longer than 0.4s animation
   }
 
   async function captureAndCrop(viewRect) {
@@ -1442,6 +2064,31 @@
     document.removeEventListener("click", preventAll, true);
     document.removeEventListener("dblclick", preventAll, true);
     document.removeEventListener("contextmenu", preventAll, true);
+  }
+
+  function getSmartFilename(type) {
+    let title = document.title || "";
+    // Sanitize: remove invalid chars for filenames
+    // Windows: < > : " / \ | ? *
+    // Control chars: \x00-\x1F
+    title = title.replace(/[<>:"\/\\|?*\x00-\x1F]/g, " ");
+    title = title.trim().replace(/\s+/g, " "); // collapse spaces
+
+    // Truncate to 100 chars to be safe
+    if (title.length > 100) {
+      title = title.substring(0, 100).trim();
+    }
+
+    const timestamp = new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace(/[:T]/g, "-");
+
+    if (title) {
+      return `${title} - ${type} - ${timestamp}.png`;
+    } else {
+      return `${type} - ${timestamp}.png`;
+    }
   }
 
   function stopProp(e) {
