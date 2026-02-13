@@ -8,15 +8,16 @@ The fastest way to capture, copy, and download screenshots in Chrome.
 
 <br>
 
-[<img src="https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/iNEddTyWiMfLSwFD6qGq.png" alt="Available on Chrome Web Store" width="248">](https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec)
+<a href="https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec">
+  <img src="https://img.shields.io/chrome-web-store/v/aboceojignbeaclebdpjjgkocmdldoec?style=for-the-badge&logo=googlechrome&logoColor=white&label=Chrome%20Web%20Store&color=4285F4" alt="Chrome Web Store">
+</a>
 
-<br>
+<br><br>
 
 ![Version](https://img.shields.io/badge/version-1.4.8-1F1F1F?style=flat-square)
 ![Chrome](https://img.shields.io/badge/Chrome-MV3-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
 
 </div>
-
 ---
 
 <br>
