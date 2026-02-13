@@ -1928,14 +1928,15 @@
     }
   }
 
-  // Right-Click to Cancel
-  window.addEventListener("contextmenu", (e) => {
-    if (dragging || (rect.width > 0 && rect.height > 0)) {
+  // Right-Click to Cancel (Removed per user request - left click handles cancel)
+  /* window.addEventListener("contextmenu", (e) => {
+    // Only verify cancellation if UI is actually active (overlayHost exists)
+    if (overlayHost && (dragging || (rect.width > 0 && rect.height > 0))) {
       e.preventDefault();
       setStatus("Canceled", 900);
       cleanup();
     }
-  });
+  }); */
 
   // Track Spacebar
   let isSpacePressed = false;
