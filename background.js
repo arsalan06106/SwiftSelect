@@ -30,7 +30,14 @@ async function injectAndStart(tab) {
     const tabId = tab.id;
     await chrome.scripting.executeScript({
       target: { tabId },
-      files: ["contentScript.js"],
+      files: [
+        "styles.js",
+        "theme.js",
+        "ui.js",
+        "capture.js",
+        "events.js",
+        "contentScript.js",
+      ],
     });
 
     chrome.tabs.sendMessage(tabId, { type: "start-selection" }, () => {
@@ -136,16 +143,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           streamId,
           tabId,
           frameInterval: message.frameInterval || 150,
+          format: message.format,
+          quality: message.quality,
         });
-
-        // 4. Close offscreen document
-        await closeOffscreen();
 
         sendResponse(result);
       } catch (err) {
         console.error("start-fullpage-capture error:", err);
-        await closeOffscreen();
         sendResponse({ success: false, error: err.message });
+      } finally {
+        // 4. Always close offscreen document
+        await closeOffscreen();
       }
     })();
 
@@ -183,7 +191,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   // --- Badge updates ---
-  if (message.type === "update-badge") {
+  if (message?.type === "update-badge") {
     chrome.action.setBadgeText({ text: message.text });
     if (message.color) {
       chrome.action.setBadgeBackgroundColor({ color: message.color });

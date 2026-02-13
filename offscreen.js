@@ -64,12 +64,12 @@ class FrameGrabber {
     return frame;
   }
 
-  /** Convert an ImageBitmap to a PNG Blob (zero-copy transfer). */
-  async frameToPngBlob(frame) {
+  /** Convert an ImageBitmap to a Blob (zero-copy transfer). */
+  async frameToBlob(frame, format = "image/png", quality = 1.0) {
     this.canvas.width = frame.width;
     this.canvas.height = frame.height;
     this.ctx.transferFromImageBitmap(frame);
-    return new Promise((r) => this.canvas.toBlob(r, "image/png"));
+    return new Promise((r) => this.canvas.toBlob(r, format, quality));
   }
 }
 
@@ -108,8 +108,7 @@ async function getTabStream(streamId, width, height) {
         minHeight: height,
         maxHeight: height,
       },
-      cursor: "never", // Direct property of video constraint
-    },
+      cursor: "never", 
   });
 }
 
@@ -125,9 +124,15 @@ async function getTabStream(streamId, width, height) {
  * 2. Open getUserMedia stream for the tab
  * 3. Loop: update --scroll-top → wait → grab frame → store
  * 4. Tell content script to restore
- * 5. Stitch frames on canvas → return PNG blob as data URL
+ * 5. Stitch frames on canvas → return Blob as data URL
  */
-async function captureFullPage(streamId, tabId, frameInterval = 50) {
+async function captureFullPage(
+  streamId,
+  tabId,
+  frameInterval = 50,
+  format = "image/png",
+  quality = 1.0,
+) {
   // 1. Unroll the page — CSS is applied first, then rect is measured
   const meta = await sendToContent(tabId, "unroll-page");
   if (!meta)
@@ -210,7 +215,8 @@ async function captureFullPage(streamId, tabId, frameInterval = 50) {
 
       // Grab frame
       const frame = await grabber.grabFrame();
-      const blob = await grabber.frameToPngBlob(frame);
+      // Use PNG for intermediate frames to avoid compression artifacts during stitching
+      const blob = await grabber.frameToBlob(frame, "image/png");
 
       frames.push({
         blob,
@@ -298,13 +304,17 @@ async function captureFullPage(streamId, tabId, frameInterval = 50) {
     bitmap.close();
   }
 
-  // Convert to data URL
+  // Convert to data URL with requested format and quality
   const dataUrl = await new Promise((r) => {
-    canvas.toBlob((blob) => {
-      const reader = new FileReader();
-      reader.onload = () => r(reader.result);
-      reader.readAsDataURL(blob);
-    }, "image/png");
+    canvas.toBlob(
+      (blob) => {
+        const reader = new FileReader();
+        reader.onload = () => r(reader.result);
+        reader.readAsDataURL(blob);
+      },
+      format,
+      quality,
+    );
   });
 
   return dataUrl;
@@ -313,8 +323,14 @@ async function captureFullPage(streamId, tabId, frameInterval = 50) {
 // ─── Message Listener ────────────────────────────────────────────────
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "start-offscreen-capture") {
-    const { streamId, tabId, frameInterval } = msg;
-    captureFullPage(streamId, tabId, frameInterval || 50)
+    const { streamId, tabId, frameInterval, format, quality } = msg;
+    captureFullPage(
+      streamId,
+      tabId,
+      frameInterval || 50,
+      format || "image/png",
+      quality || 1.0,
+    )
       .then((dataUrl) => {
         sendResponse({ success: true, dataUrl });
       })
