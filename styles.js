@@ -64,26 +64,28 @@ if (!window.SwiftSelect.styles) {
       all: initial;
       font-family: 'Google Sans', 'Roboto', system-ui, sans-serif;
       font-weight: 500;
-      font-size: 26px;
+      font-size: 14px; 
       
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-style: solid;
-      border-width: 0px; /* Default none, but dark mode adds border */
+      border-width: 0px; 
       border-radius: 999px;
       
       pointer-events: auto;
       z-index: 2147483648;
       display: flex;
-      align-items: center;
+      align-items: center; /* Enforce vertical centering */
+      justify-content: center;
       flex-direction: row;
-      gap: 12px;
+      gap: 0; 
       top: 24px;
       right: 24px;
-      padding: 12px;
+      padding: 16px; 
       position: fixed;
       min-width: auto;
-      max-width: 500px;
+      max-width: none; /* Ensure no constraint on zoom */
+      white-space: nowrap; /* Never wrap */
       
       transform-origin: top center;
       animation: expressiveExpand 500ms cubic-bezier(0.2, 0.0, 0.0, 1.0) forwards;
@@ -99,7 +101,9 @@ if (!window.SwiftSelect.styles) {
     .qs-guide-buttons {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px; 
+      margin: 0;
+      flex-shrink: 0; /* Prevent squishing */
     }
 
     /* Generic Button Layout */
@@ -120,15 +124,19 @@ if (!window.SwiftSelect.styles) {
       min-width: 48px;
       height: 48px;
       position: relative;
-      gap: 8px;
+      gap: 10px;
       box-sizing: border-box;
+      white-space: nowrap;
+      line-height: normal; /* Fix vertical alignment issues */
+      flex-shrink: 0; /* Prevent squishing on zoom */
     }
 
     .qs-guide-btn svg {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       fill: currentColor;
       transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+      display: block; /* Remove inline-block gaps */
     }
 
     .qs-guide-btn:active {
@@ -140,20 +148,22 @@ if (!window.SwiftSelect.styles) {
       display: flex;
       border-radius: 999px;
       padding: 0;
-      gap: 8px; 
+      gap: 12px; 
       height: auto;
       align-items: center;
+      flex-shrink: 0;
     }
 
     /* Visible Area (Left) */
     .qs-segmented .qs-guide-btn:first-child {
       border-radius: 999px;
-      padding: 0 16px;
+      padding: 0 20px; 
     }
 
     /* Download Button (Right) */
     .qs-segmented .qs-guide-btn:last-child {
       border-radius: 50%;
+      margin-left: 0; 
       width: 48px;
       height: 48px;
       padding: 0;
@@ -167,46 +177,54 @@ if (!window.SwiftSelect.styles) {
     /* Full Page Button Layout (Standalone) */
     .qs-guide-buttons > .qs-guide-btn {
       border-radius: 999px;
-      padding: 0 20px;
+      padding: 0 24px; 
     }
 
     /* Theme Toggle Button (Circle override) */
     .qs-guide-buttons > .qs-theme-toggle {
-      width: 32px !important;
-      height: 32px !important;
-      min-width: 32px !important;
-      padding: 0;
+      width: 24px !important; /* EXACT match to icon size */
+      height: 24px !important;
+      min-width: 24px !important;
+      padding: 0 !important;
       border-radius: 50%;
-      border: none; /* Borderless */
+      border: 0 solid transparent !important; /* Zero border */
       margin-left: 0; 
-      background: transparent;
-      box-shadow: none; /* Ensure no shadow */
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
     }
     
     /* Hover Animation for Theme Toggle */
     .qs-guide-buttons > .qs-theme-toggle:hover {
-       background: #1F1F1F; 
-       color: #ffffff;
+       background: transparent !important; 
+       color: #1F1F1F !important;
+       border-color: transparent !important;
+       box-shadow: none !important;
     }
     
-    /* Theme Icons */
+    /* Theme Icons - FIX SPECIFICITY */
     .qs-guide-buttons > .qs-theme-toggle svg {
-      width: 20px;
-      height: 20px;
+      width: 24px; 
+      height: 24px;
       transition: transform 0.5s cubic-bezier(0.2, 0, 0, 1);
     }
     .qs-guide-buttons > .qs-theme-toggle:hover svg {
       transform: rotate(180deg);
     }
 
-    .qs-icon-moon { display: none; }
-    .qs-theme-dark .qs-icon-moon { display: block; }
-    .qs-theme-dark .qs-icon-sun { display: none; }
+    /* Force display states with !important to override .qs-guide-btn svg */
+    .qs-icon-moon { display: none !important; }
+    .qs-icon-sun { display: block !important; }
+    
+    .qs-theme-dark .qs-icon-moon { display: block !important; }
+    .qs-theme-dark .qs-icon-sun { display: none !important; }
     
     /* Dark Theme Toggle Hover */
     .qs-theme-dark .qs-guide-buttons > .qs-theme-toggle:hover {
-      background: #ffffff !important;
-      color: #1a1a1a !important;
+      background: transparent !important;
+      color: #ffffff !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
     }
 
     /* Toast / Status Layout */
@@ -451,7 +469,127 @@ if (!window.SwiftSelect.styles) {
     }
 
     /* =========================================
-       4. ANIMATIONS & EXTRAS
+       4. GLASS THEME (Mint)
+       ========================================= */
+    
+    /* Guide Container - Mint */
+    .qs-theme-glass.qs-guide {
+      background: #eaece7 !important; 
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+      border: none !important;
+    }
+
+    /* 
+       Glass Theme - MINT BUTTONS
+       Targets: "Visible Area" (Left) and "Full Page" (Right)
+    */
+    .qs-theme-glass .qs-segmented .qs-guide-btn:first-child,
+    .qs-theme-glass .qs-guide-buttons > .qs-guide-btn:not(.qs-theme-toggle) {
+      background: #f2f4ef !important;
+      border: 2px solid #f2f4ef !important;
+      color: #282b30 !important;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18), 0 1px 4px rgba(0, 0, 0, 0.10) !important;
+      opacity: 1;
+    }
+
+    /* Hover States - MINT BUTTONS → Invert to Dark */
+    .qs-theme-glass .qs-segmented .qs-guide-btn:first-child:hover,
+    .qs-theme-glass .qs-guide-buttons > .qs-guide-btn:not(.qs-theme-toggle):hover {
+      background: #282b30 !important;
+      color: #ffffff !important;
+      border-color: #282b30 !important;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18), 0 1px 4px rgba(0, 0, 0, 0.10) !important;
+    }
+    .qs-theme-glass .qs-segmented .qs-guide-btn:first-child:hover svg,
+    .qs-theme-glass .qs-guide-buttons > .qs-guide-btn:not(.qs-theme-toggle):hover svg {
+      fill: #ffffff !important;
+    }
+
+    /* 
+       Glass Theme - DARK BUTTON (Download/Middle)
+    */
+    .qs-theme-glass .qs-segmented .qs-guide-btn:last-child {
+      background: #282b30 !important;
+      border: 2px solid #282b30 !important;
+      color: #ffffff !important;
+      box-shadow: none !important;
+      opacity: 1;
+    }
+    
+    /* Hover State - DARK BUTTON → Invert to Mint */
+    .qs-theme-glass .qs-segmented .qs-guide-btn:last-child:hover {
+      background: #f2f4ef !important;
+      color: #282b30 !important;
+      border-color: #f2f4ef !important;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18), 0 1px 4px rgba(0, 0, 0, 0.10) !important;
+    }
+    .qs-theme-glass .qs-segmented .qs-guide-btn:last-child:hover svg {
+      fill: #282b30 !important;
+    }
+    
+    /* Ensure Download Icon is White */
+    .qs-theme-glass .qs-segmented .qs-guide-btn:last-child svg {
+      fill: #ffffff !important;
+    }
+
+    /* Ensure Other Icons are Dark */
+    .qs-theme-glass .qs-segmented .qs-guide-btn:first-child svg,
+    .qs-theme-glass .qs-guide-buttons > .qs-guide-btn:not(.qs-theme-toggle) svg {
+      fill: #282b30 !important;
+    }
+    
+    /* Active States */
+    .qs-theme-glass .qs-guide-btn:active {
+      transform: scale(0.96) !important;
+    }
+
+    /* Theme Toggle Visibility */
+    .qs-theme-glass .qs-icon-sun { display: block !important; }
+    .qs-theme-glass .qs-icon-moon { display: none !important; }
+
+    /* Theme Toggle Color */
+    .qs-theme-glass .qs-guide-buttons > .qs-theme-toggle {
+      color: #282b30 !important;
+    }
+
+    /* Tooltip */
+    .qs-theme-glass .qs-guide-btn::before {
+       background: rgba(40, 43, 48, 0.9); 
+       color: white;
+    }
+
+    /* --- Glass Toast / Status --- */
+    .qs-theme-glass.qs-status {
+      background: #eaece7 !important;
+      color: #282b30 !important;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+      border: none !important;
+      --qs-icon-fill: #282b30;
+      --qs-icon-stroke: #f2f4ef;
+    }
+    .qs-theme-glass .qs-status-icon,
+    .qs-theme-glass.qs-status .qs-status-icon {
+      background: transparent !important;
+      color: #282b30 !important;
+    }
+    .qs-theme-glass .qs-save-btn,
+    .qs-theme-glass.qs-status .qs-save-btn {
+      background: #282b30 !important;
+      color: #ffffff !important;
+      border: 2px solid transparent !important;
+    }
+    .qs-theme-glass .qs-save-btn:hover,
+    .qs-theme-glass.qs-status .qs-save-btn:hover {
+      background: #f2f4ef !important;
+      color: #282b30 !important;
+      border: 2px solid #282b30 !important;
+    }
+
+
+    /* =========================================
+       5. ANIMATIONS & EXTRAS
        ========================================= */
        
     /* ... (Keep existing complex animations) ... */

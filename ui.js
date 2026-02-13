@@ -274,6 +274,11 @@ if (!window.SwiftSelect.ui) {
       } else {
         this.statusEl.classList.remove("qs-theme-dark");
       }
+      if (window.SwiftSelect.theme.currentUserTheme === "glass") {
+        this.statusEl.classList.add("qs-theme-glass");
+      } else {
+        this.statusEl.classList.remove("qs-theme-glass");
+      }
 
       this.currentStatus = type;
 

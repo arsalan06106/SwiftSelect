@@ -15,8 +15,13 @@ if (!window.SwiftSelect.theme) {
     },
 
     handleThemeToggle: function () {
-      this.currentUserTheme =
-        this.currentUserTheme === "light" ? "dark" : "light";
+      if (this.currentUserTheme === "light") {
+        this.currentUserTheme = "dark";
+      } else if (this.currentUserTheme === "dark") {
+        this.currentUserTheme = "glass";
+      } else {
+        this.currentUserTheme = "light";
+      }
       this.applyTheme(this.currentUserTheme);
       chrome.storage.local.set({ userTheme: this.currentUserTheme });
     },
@@ -26,12 +31,17 @@ if (!window.SwiftSelect.theme) {
       const hudEl = window.SwiftSelect.ui?.hudEl;
 
       if (!guideEl) return;
+
+      // Reset classes first
+      guideEl.classList.remove("qs-theme-dark", "qs-theme-glass");
+      if (hudEl) hudEl.classList.remove("qs-theme-dark");
+
       if (theme === "dark") {
         guideEl.classList.add("qs-theme-dark");
         if (hudEl) hudEl.classList.add("qs-theme-dark");
-      } else {
-        guideEl.classList.remove("qs-theme-dark");
-        if (hudEl) hudEl.classList.remove("qs-theme-dark");
+      } else if (theme === "glass") {
+        guideEl.classList.add("qs-theme-glass");
+        // Glass uses Light theme for HUD, so no class needed there
       }
     },
 

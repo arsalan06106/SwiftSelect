@@ -18,7 +18,6 @@ The fastest way to capture, copy, and download screenshots in Chrome.
 ![Chrome](https://img.shields.io/badge/Chrome-MV3-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
 
 </div>
----
 
 <br>
 
