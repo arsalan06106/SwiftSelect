@@ -33,6 +33,18 @@
         "default": "Alt+X"
       },
       "description": "Activate selection mode"
+    },
+    "capture-visible-download": {
+      "suggested_key": {
+        "default": "Alt+S"
+      },
+      "description": "Capture visible area & download"
+    },
+    "capture-full-page": {
+      "suggested_key": {
+        "default": "Alt+F"
+      },
+      "description": "Capture full page & download"
     }
   }
 }

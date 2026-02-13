@@ -108,7 +108,8 @@ async function getTabStream(streamId, width, height) {
         minHeight: height,
         maxHeight: height,
       },
-      cursor: "never", 
+      cursor: "never",
+    },
   });
 }
 

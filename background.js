@@ -2,16 +2,22 @@
 
 chrome.action.onClicked.addListener((tab) => {
   if (!tab?.id) return;
-  injectAndStart(tab);
+  injectAndStart(tab, "start-selection");
 });
 
 chrome.commands.onCommand.addListener((command, tab) => {
-  if (command === "activate-selection" && tab?.id) {
-    injectAndStart(tab);
+  if (!tab?.id) return;
+
+  if (command === "activate-selection") {
+    injectAndStart(tab, "start-selection");
+  } else if (command === "capture-visible-download") {
+    injectAndStart(tab, "capture-download");
+  } else if (command === "capture-full-page") {
+    injectAndStart(tab, "capture-full");
   }
 });
 
-async function injectAndStart(tab) {
+async function injectAndStart(tab, messageType) {
   try {
     const url = tab.url || "";
     if (
@@ -40,10 +46,10 @@ async function injectAndStart(tab) {
       ],
     });
 
-    chrome.tabs.sendMessage(tabId, { type: "start-selection" }, () => {
+    chrome.tabs.sendMessage(tabId, { type: messageType }, () => {
       if (chrome.runtime.lastError) {
         console.warn(
-          "sendMessage (start-selection) warning:",
+          `sendMessage (${messageType}) warning:`,
           chrome.runtime.lastError.message,
         );
       }
