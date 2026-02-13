@@ -33,18 +33,31 @@
       box-sizing: border-box;
     }
 
-    /* Smart Element Highlighter */
+    /* Smart Element Highlighter - Dashed Black & White */
     .qs-highlighter {
       all: initial;
       position: absolute;
-      border-width: 2px;
-      border-style: dotted;
+      /* Dashed Border Trick: Use outline for second color? Or box-shadow? */
+      /* Best: dashed white border with thick black box-shadow/outline to make it pop */
+      border: 2px dashed #ffffff;
+      box-shadow: 0 0 0 2px #1f1f1f, 0 4px 12px rgba(0,0,0,0.3); 
       border-radius: 4px;
       pointer-events: none;
       box-sizing: border-box;
       z-index: 2147483646; 
-      transition: all 0.1s ease-out;
+      transition: all 0.1s ease-out; /* Revert to simpler transition per "dashed" feel */
       display: none;
+      
+      /* Subtle dark tint inside to confirm selection area */
+      background: rgba(31, 31, 31, 0.1);
+      
+      /* Animation: Subtle scale */
+      animation: qs-fade-in 0.15s ease-out forwards;
+    }
+    
+    @keyframes qs-fade-in {
+      0% { opacity: 0; transform: scale(0.98); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
     /* Main Menu Container */
@@ -287,11 +300,9 @@
       background: rgba(0, 0, 0, 0.04);
     }
 
-    /* Highlighter */
+    /* Highlighter (Dark Theme Override if needed) */
     .qs-highlighter {
-      border-color: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.8);
-      background: rgba(0, 0, 0, 0.02);
+       /* Keep the dashed white + black shadow, works on both modes */
     }
 
     /* Main Menu */
@@ -578,7 +589,7 @@
     .qs-guide-btn:hover .fp-tr { animation: cornerMoveTR 0.5s ease-in-out; }
     .qs-guide-btn:hover .fp-br { animation: cornerMoveBR 0.5s ease-in-out; }
     .qs-guide-btn:hover .fp-bl { animation: cornerMoveBL 0.5s ease-in-out; }
-    .qs-guide-btn:hover .fp-lines { animation: lineWipe 0.6s cubic-bezier(0.2, 0, 0, 1); }
+    .qs-guide-btn:hover .fp-inner-lines { animation: lineWipe 0.6s cubic-bezier(0.2, 0, 0, 1); }
   `;
 
   function makeShadowOverlay(tag, className, innerHTML = "") {
@@ -699,7 +710,8 @@
               <path class="fp-corner fp-br" d="M893-216.13V-27H703.87v-73H820v-116.13h73Z"/>
               <path class="fp-corner fp-bl" d="M67-216.13V-27H256.13v-73H140v-116.13H67Z"/>
               <!-- Internal Lines -->
-              <path class="fp-lines" d="M273-233h414v-494H273v494Zm0 79.22q-31.38 0-55.3-23.92-23.92-23.92-23.92-55.3v-494q0-31.38 23.92-55.3 23.92-23.92 55.3-23.92h414q31.38 0 55.3 23.92 23.92 23.92 23.92 55.3v494q0 31.38-23.92 55.3-23.92 23.92-55.3 23.92H273Zm94.74-413.96h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09ZM273-233v-494 494Z"/>
+              <path class="fp-box" d="M273-233h414v-494H273v494Zm0 79.22q-31.38 0-55.3-23.92-23.92-23.92-23.92-55.3v-494q0-31.38 23.92-55.3 23.92-23.92 55.3-23.92h414q31.38 0 55.3 23.92 23.92 23.92 23.92 55.3v494q0 31.38-23.92 55.3-23.92 23.92-55.3 23.92H273Z"/>
+              <path class="fp-inner-lines" d="M367.74-567.74h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09Zm0 120h225.09v-65.09H367.74v65.09Z"/>
             </svg>
             <span>Full Page</span>
           </button>
@@ -860,10 +872,10 @@
       iconSvg =
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 51.976 51.976"><path d="M44.373,7.603c-10.137-10.137-26.632-10.138-36.77,0c-10.138,10.138-10.137,26.632,0,36.77s26.632,10.138,36.77,0C54.51,34.235,54.51,17.74,44.373,7.603z M36.241,36.241c-0.781,0.781-2.047,0.781-2.828,0l-7.425-7.425l-7.778,7.778c-0.781,0.781-2.047,0.781-2.828,0c-0.781-0.781-0.781-2.047,0-2.828l7.778-7.778l-7.425-7.425c-0.781-0.781-0.781-2.048,0-2.828c0.781-0.781,2.047-0.781,2.828,0l7.425,7.425l7.071-7.071c0.781-0.781,2.047-0.781,2.828,0c0.781,0.781,0.781,2.047,0,2.828l-7.071,7.071l7.425,7.425C37.022,34.194,37.022,35.46,36.241,36.241z"/></svg>';
     } else if (type === "success" || type === "saved") {
-      // Tick SVG (Standalone Split Path: Filled Shield + White Tick Stroke)
-      // This ensures "Dark Inside" (Shield) and "White Tick" without needing a container background
+      // Tick SVG (Tick Only - No Background)
+      // Uses var(--qs-icon-fill) for stroke to ensure it is Dark in Light Mode and White in Dark Mode
       iconSvg =
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><!-- Shield Base --><path d="M20 11.9999C20 16.9083 14.646 20.4783 12.698 21.6147C12.4766 21.7439 12.3659 21.8085 12.2097 21.842C12.0884 21.868 11.9116 21.868 11.7903 21.842C11.6341 21.8085 11.5234 21.7439 11.302 21.6147C9.35396 20.4783 4 16.9083 4 11.9999V7.21747C4 6.41796 4 6.0182 4.13076 5.67457C4.24627 5.37101 4.43398 5.10015 4.67766 4.8854C4.9535 4.64231 5.3278 4.50195 6.0764 4.22122L11.4382 2.21054C11.6461 2.13258 11.75 2.0936 11.857 2.07815C11.9518 2.06444 12.0482 2.06444 12.143 2.07815C12.25 2.0936 12.3539 2.13258 12.5618 2.21054L17.9236 4.22122C18.6722 4.50195 19.0465 4.64231 19.3223 4.8854C19.566 5.10015 19.7537 5.37101 19.8692 5.67457C20 6.0182 20 6.41796 20 7.21747V11.9999Z" fill="var(--qs-icon-fill)" stroke="none"/><!-- Tick Mark --><path d="M9 11.4999L11 13.4999L15.5 8.99987" stroke="var(--qs-icon-stroke)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>';
+        '<svg width="100%" height="100%" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" version="1.1" fill="none" stroke="var(--qs-icon-fill)" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="m1.75 9.75 2.5 2.5m3.5-4 2.5-2.5m-4.5 4 2.5 2.5 6-6.5"/></svg>';
     }
 
     // Set SVG content (ensure fill/stroke inherits correctly)
@@ -871,10 +883,15 @@
     // Force SVG styling to fit container
     const svgEl = iconEl.querySelector("svg");
     if (svgEl) {
-      svgEl.style.width = "100%";
-      svgEl.style.height = "100%";
-      // Note: Stroke/Fill logic is now handled inline in SVG for the tick
-      // Note: Stroke/Fill logic is now handled inline in SVG for the tick
+      if (iconSvg.includes("var(--qs-icon-fill)")) {
+        svgEl.style.width = "28px";
+        svgEl.style.height = "28px";
+        svgEl.style.paddingBottom = "2px"; // Visually center the tick
+      } else {
+        svgEl.style.width = "100%";
+        svgEl.style.height = "100%";
+      }
+      // Note: Stroke/Fill logic for the tick is handled inline in the SVG
       if (!iconSvg.includes("var(--qs-icon-fill")) {
         // Fallback for Info/Error which are standard filled or stroked
         if (iconSvg.includes("stroke") && !iconSvg.includes("fill")) {
@@ -1099,7 +1116,7 @@
         new ClipboardItem({ "image/png": lastBlob }),
       ]);
       triggerFlash(); // Full screen flash for visible area
-      setStatus("Copied & Saved", 5000, "success");
+      setStatus("Copied to clipboard", 5000, "success");
     } catch (err) {
       console.error("handleCaptureVisible error:", err);
       setStatus("Capture failed", 3000, "error");
@@ -1150,7 +1167,7 @@
 
       triggerFlash(); // Flash on Download
 
-      setStatus("Copied to clipboard", 5000, "saved");
+      setStatus("Copied & Saved", 5000, "saved");
     } catch (err) {
       console.error("handleCaptureAndDownload error:", err);
       setStatus("Capture failed", 3000, "error");
@@ -1533,6 +1550,11 @@
       const response = await fetch(result.dataUrl);
       lastBlob = await response.blob();
 
+      // Copy to clipboard
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": lastBlob }),
+      ]);
+
       updateBadge("100%");
       if (btn) {
         btn.classList.remove("qs-loading");
@@ -1556,7 +1578,8 @@
       URL.revokeObjectURL(url);
 
       updateBadge("✓", "#198754");
-      updateBadge("✓", "#198754");
+      // Use "saved" type so no button is added, but still uses the checkmark icon
+      setStatus("Page Saved Successfully", 5000, "saved");
       setTimeout(() => updateBadge(""), 3000);
       // triggerFlash(); // Full screen flash REMOVED per user request
 
@@ -1669,15 +1692,26 @@
       // DEBOUNCE: Clear previous timer
       if (snapTimer) clearTimeout(snapTimer);
 
-      // FIX GHOST CAPTURE: Clear state immediately when moving
-      if (highlighterEl) highlighterEl.style.display = "none";
-      highlightedRect = null;
+      // FIX AGGRESSIVE HIDING:
+      // Do NOT hide immediately. Let the timer decide if we found a new target or lost the old one.
+      // However, if we moved VERY far (e.g. outside the rect), maybe we should hint?
+      // But user said "little movement inside... make it disappear" was the problem.
+      // So removing the immediate hide solves that.
+      // The debounce timer will update or clear it naturally.
 
-      // OPT-IN CHECK: STRICTLY Ctrl (or Meta) key only
+      // if (highlighterEl) highlighterEl.style.display = "none";
+      // highlightedRect = null;
+
+      // OPT-IN CHECK: Ctrl (or Meta) key REQUIRED again.
       const isSnapping = e.ctrlKey || e.metaKey;
       if (!isSnapping) {
-        return; // Stop here if Alt is not held
+        // If not holding Ctrl, hide existing highlighter immediately (so it feels responsive when releasing key)
+        if (highlighterEl) highlighterEl.style.display = "none";
+        highlightedRect = null;
+        if (hudEl) hudEl.style.display = "none";
+        return;
       }
+      // const isSnapping = true; // REVERTED
 
       // Set new timer for "Hover Intent"
       snapTimer = setTimeout(() => {
@@ -1724,10 +1758,10 @@
             "A",
           ].includes(tagName);
 
-          // 4. UNIVERSAL SIZE CAP (The "No Giants" Rule)
-          // If it's NOT media, and it's huge (> 70% of screen), REJECT IT.
+          // 4. UNIVERSAL SIZE CAP (The "No Giants" Rule) - RELAXED
+          // If it's NOT media, and it's huge (> 95% of screen), REJECT IT.
           if (!isMedia) {
-            if (r.width > vw * 0.7 || r.height > vh * 0.7) return false;
+            if (r.width > vw * 0.95 || r.height > vh * 0.95) return false;
           }
 
           const style = window.getComputedStyle(el);
@@ -1750,19 +1784,21 @@
             style.borderWidth !== "0px" &&
             style.borderStyle !== "none" &&
             style.borderColor !== "transparent";
+          const hasBoxShadow = style.boxShadow !== "none";
 
           // 7. UNIVERSAL "Hollow Box" Killer
           // If it's a large box (>300px) with NO border and NO image, it's likely just a background container.
           if (r.width > 300 && r.height > 300) {
-            if (!hasBorder && !hasBgImage) {
+            if (!hasBorder && !hasBgImage && !hasBoxShadow) {
               // If it has a color but no text -> Reject
               // If it has nothing -> Reject
               const text = el.innerText ? el.innerText.trim() : "";
-              if (text.length < 20) return false; // "Small Text Trap" applied universally
+              if (text.length < 10) return false; // Reduced from 20 to 10
             }
           }
 
-          if (hasBgImage || hasBgColor || hasBorder) return true;
+          if (hasBgImage || hasBgColor || hasBorder || hasBoxShadow)
+            return true;
 
           // 8. Final Content Fallback
           if (el.innerText && el.innerText.trim().length > 0) return true;
@@ -1809,7 +1845,7 @@
           highlightedRect = null;
           if (hudEl) hudEl.style.display = "none";
         }
-      }, 300); // 300ms Debounce Delay
+      }, 150); // Reduced from 300ms to 150ms for snappier feel
 
       return;
     }
@@ -1867,7 +1903,7 @@
         captureAndCrop(highlightedRect).finally(() => {
           cleanup();
           triggerFlash(highlightedRect);
-          setStatus("Copied & Saved", 5000, "success");
+          setStatus("Copied to clipboard", 5000, "success");
         });
         return;
       }
@@ -1880,7 +1916,7 @@
     captureAndCrop(rect).finally(() => {
       cleanup();
       // triggerFlash(rect); // Removed per user: No flash on selection
-      setStatus("Copied & Saved", 5000, "success");
+      setStatus("Copied to clipboard", 5000, "success");
     });
   }
 
