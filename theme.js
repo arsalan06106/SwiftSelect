@@ -10,8 +10,37 @@ if (!window.SwiftSelect.theme) {
           if (data.userTheme) {
             this.currentUserTheme = data.userTheme;
           }
+          this.applyTheme(this.currentUserTheme);
         });
       }
+
+      // Listener for System/Browser Theme Changes
+      if (window.matchMedia) {
+        window
+          .matchMedia("(prefers-color-scheme: dark)")
+          .addEventListener("change", () => {
+            if (this.currentUserTheme === "glass") {
+              this.applyTheme("glass");
+            }
+          });
+      }
+
+      // Observer for Site Theme Changes (Class/Style updates)
+      const observer = new MutationObserver(() => {
+        if (this.currentUserTheme === "glass") {
+          // Debounce/Throttle could be added here if needed, but applyTheme is relatively cheap
+          this.applyTheme("glass");
+        }
+      });
+
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class", "style", "data-theme"],
+      });
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["class", "style", "data-theme"],
+      });
     },
 
     handleThemeToggle: function () {
@@ -29,67 +58,96 @@ if (!window.SwiftSelect.theme) {
     applyTheme: function (theme) {
       const guideEl = window.SwiftSelect.ui?.guideEl;
       const hudEl = window.SwiftSelect.ui?.hudEl;
+      const statusEl = window.SwiftSelect.ui?.statusEl;
 
-      if (!guideEl) return;
+      // if (!guideEl) return; // Allow updating status/hud even if guide is missing
 
       // Reset classes first
-      guideEl.classList.remove("qs-theme-dark", "qs-theme-glass");
-      if (hudEl) hudEl.classList.remove("qs-theme-dark");
+      if (guideEl) {
+        guideEl.classList.remove(
+          "qs-theme-dark",
+          "qs-theme-glass",
+          "qs-glass-contrast",
+          "qs-theme-glass-dark",
+        );
+      }
+      if (statusEl)
+        statusEl.classList.remove(
+          "qs-theme-dark",
+          "qs-theme-glass",
+          "qs-glass-contrast",
+          "qs-theme-glass-dark",
+        );
+      if (hudEl) hudEl.classList.remove("qs-theme-dark", "qs-theme-glass-dark");
 
       if (theme === "dark") {
-        guideEl.classList.add("qs-theme-dark");
+        if (guideEl) guideEl.classList.add("qs-theme-dark");
+        if (statusEl) statusEl.classList.add("qs-theme-dark");
         if (hudEl) hudEl.classList.add("qs-theme-dark");
       } else if (theme === "glass") {
-        guideEl.classList.add("qs-theme-glass");
-        // Glass uses Light theme for HUD, so no class needed there
+        // Adaptive Glass: Check Site Theme
+        const isDarkSite = this.isPageDark();
+
+        if (isDarkSite) {
+          // Glass Dark
+          if (guideEl)
+            guideEl.classList.add("qs-theme-glass", "qs-theme-glass-dark");
+          if (statusEl)
+            statusEl.classList.add("qs-theme-glass", "qs-theme-glass-dark");
+          if (hudEl) hudEl.classList.add("qs-theme-glass-dark");
+        } else {
+          // Glass Light
+          if (guideEl) guideEl.classList.add("qs-theme-glass");
+          if (statusEl) statusEl.classList.add("qs-theme-glass");
+        }
       }
+      // 'light' is default (no classes added)
     },
 
     shouldUseDarkMode: function () {
-      return this.currentUserTheme === "dark";
+      if (this.currentUserTheme === "dark") return true;
+      if (this.currentUserTheme === "glass" && this.isPageDark()) return true;
+      return false;
     },
 
     isPageDark: function () {
-      // 1. Check Page Brightness.
+      // 1. Check Page Brightness via Computed Style
       try {
-        const bodyColor = window.getComputedStyle(
-          document.body,
-        ).backgroundColor;
-        const rgb = bodyColor.match(/\d+/g);
-        if (rgb && rgb.length >= 3) {
-          // Luminance formula: 0.2126*R + 0.7152*G + 0.0722*B
-          const r = parseInt(rgb[0]);
-          const g = parseInt(rgb[1]);
-          const b = parseInt(rgb[2]);
-          const alpha = rgb.length > 3 ? parseFloat(rgb[3]) : 1;
-
-          // If transparent, assume Light mode (most sites default to white bg)
-          // OR check HTML tag? Let's check HTML tag if body is transparent.
-          if (alpha < 0.1) {
-            // Check html tag
-            const htmlColor = window.getComputedStyle(
-              document.documentElement,
-            ).backgroundColor;
-            const rgbH = htmlColor.match(/\d+/g);
-            if (rgbH && rgbH.length >= 3) {
-              const rH = parseInt(rgbH[0]);
-              const gH = parseInt(rgbH[1]);
-              const bH = parseInt(rgbH[2]);
-              const lumaH = 0.2126 * rH + 0.7152 * gH + 0.0722 * bH;
-              return lumaH < 128; // < 128 is Dark
-            }
-            // if html is also transparent, default to Light?
-            // Users usually see White background if everything is transparent.
-            return false;
+        const getBrightness = (el) => {
+          if (!el) return null;
+          const style = window.getComputedStyle(el);
+          const color = style.backgroundColor;
+          const rgb = color.match(/\d+/g);
+          if (rgb && rgb.length >= 3) {
+            const a = rgb.length > 3 ? parseFloat(rgb[3]) : 1;
+            if (a < 0.1) return null; // Transparent
+            return (
+              0.2126 * parseInt(rgb[0]) +
+              0.7152 * parseInt(rgb[1]) +
+              0.0722 * parseInt(rgb[2])
+            );
           }
+          return null;
+        };
 
-          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-          return luma < 128; // Dark Page -> Use Dark Mode UI (White Flash)
+        let luma = getBrightness(document.body);
+        if (luma === null) luma = getBrightness(document.documentElement);
+
+        if (luma !== null) {
+          return luma < 128; // < 128 is Dark
+        }
+
+        // 2. Fallback: Prefers-Color-Scheme
+        if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
+          return true;
         }
       } catch (e) {
         console.error("isPageDark error:", e);
       }
-      return false; // Default to Light Mode (Black Flash)
+      return false; // Default to Light
     },
   };
 }

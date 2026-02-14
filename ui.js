@@ -24,6 +24,26 @@ if (!window.SwiftSelect.ui) {
     qsSheet: null,
 
     makeShadowOverlay: function (tag, className, innerHTML = "") {
+      // Ensure SVG Filter is injected ONCE into the main document
+      if (!document.getElementById("swift-select-filters")) {
+        const svgContainer = document.createElement("div");
+        svgContainer.id = "swift-select-filters";
+        svgContainer.style.position = "absolute";
+        svgContainer.style.width = "0";
+        svgContainer.style.height = "0";
+        svgContainer.style.zIndex = "-1";
+        svgContainer.style.pointerEvents = "none";
+        svgContainer.innerHTML = `
+          <svg width="0" height="0">
+            <filter id="glass-blur" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox">
+              <feTurbulence type="fractalNoise" baseFrequency="0.003 0.007" numOctaves="1" result="turbulence" />
+              <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="200" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </svg>
+        `;
+        document.body.appendChild(svgContainer);
+      }
+
       const host = document.createElement("div");
       host.style.position = "fixed";
       host.style.zIndex = "2147483647";
@@ -102,6 +122,7 @@ if (!window.SwiftSelect.ui) {
         this.guideShadow = shadow;
 
         this.guideEl.innerHTML = `
+        <div class="qs-glass-surface"></div>
         <div class="qs-guide-buttons">
           <div class="qs-segmented">
             <button class="qs-guide-btn" data-action="capture-visible" data-tooltip="Copy Visible">
@@ -167,13 +188,13 @@ if (!window.SwiftSelect.ui) {
 
       // Ensure guide is visible AND RESET ANIMATION CLASS
       if (this.guideHost) {
-        this.guideHost.style.display = "flex";
-        this.guideEl.classList.remove("qs-hiding");
-
-        // Apply initial theme
+        // Apply initial theme BEFORE showing to prevent flash
         window.SwiftSelect.theme.applyTheme(
           window.SwiftSelect.theme.currentUserTheme,
         );
+
+        this.guideHost.style.display = "flex";
+        this.guideEl.classList.remove("qs-hiding");
 
         // Force Reflow
         void this.guideEl.offsetWidth;
@@ -210,9 +231,9 @@ if (!window.SwiftSelect.ui) {
         iconSvg =
           '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 51.976 51.976"><path d="M44.373,7.603c-10.137-10.137-26.632-10.138-36.77,0c-10.138,10.138-10.137,26.632,0,36.77s26.632,10.138,36.77,0C54.51,34.235,54.51,17.74,44.373,7.603z M36.241,36.241c-0.781,0.781-2.047,0.781-2.828,0l-7.425-7.425l-7.778,7.778c-0.781,0.781-2.047,0.781-2.828,0c-0.781-0.781-0.781-2.047,0-2.828l7.778-7.778l-7.425-7.425c-0.781-0.781-0.781-2.048,0-2.828c0.781-0.781,2.047-0.781,2.828,0l7.425,7.425l7.071-7.071c0.781-0.781,2.047-0.781,2.828,0c0.781,0.781,0.781,2.047,0,2.828l-7.071,7.071l7.425,7.425C37.022,34.194,37.022,35.46,36.241,36.241z"/></svg>';
       } else if (type === "success" || type === "saved") {
-        // Tick SVG
+        // Tick SVG - New User Provided One (Double Tick Style)
         iconSvg =
-          '<svg width="100%" height="100%" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" version="1.1" fill="none" stroke="var(--qs-icon-fill)" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="m1.75 9.75 2.5 2.5m3.5-4 2.5-2.5m-4.5 4 2.5 2.5 6-6.5"/></svg>';
+          '<svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" stroke="var(--qs-icon-fill)" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="m1.75 9.75 2.5 2.5m3.5-4 2.5-2.5m-4.5 4 2.5 2.5 6-6.5"/></svg>';
       }
 
       iconEl.innerHTML = iconSvg;
@@ -266,19 +287,13 @@ if (!window.SwiftSelect.ui) {
         timeout = 2500;
       }
 
+      // Apply theme using central logic BEFORE display
+      window.SwiftSelect.theme.applyTheme(
+        window.SwiftSelect.theme.currentUserTheme,
+      );
+
       this.statusHost.style.display = "";
       this.statusEl.style.display = "flex";
-
-      if (window.SwiftSelect.theme.shouldUseDarkMode()) {
-        this.statusEl.classList.add("qs-theme-dark");
-      } else {
-        this.statusEl.classList.remove("qs-theme-dark");
-      }
-      if (window.SwiftSelect.theme.currentUserTheme === "glass") {
-        this.statusEl.classList.add("qs-theme-glass");
-      } else {
-        this.statusEl.classList.remove("qs-theme-glass");
-      }
 
       this.currentStatus = type;
 
