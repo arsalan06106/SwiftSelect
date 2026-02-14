@@ -126,7 +126,7 @@ if (!window.SwiftSelect.styles) {
       font-weight: 700;
       border-width: 2px;
       border-style: solid;
-      transition: transform 0.1s ease-out; /* Removed 'all' to prevent bg flash */
+      transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1), background 0.1s ease, box-shadow 0.1s ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -150,7 +150,7 @@ if (!window.SwiftSelect.styles) {
     }
 
     .qs-guide-btn:active {
-      transform: scale(0.92); /* Calmed liquid button effect */
+      transform: scale(0.96) translateY(1px);
     }
 
     /* Segmented Group Layout */
@@ -367,6 +367,11 @@ if (!window.SwiftSelect.styles) {
       /* box-shadow removed by request */
     }
 
+    .qs-guide-btn:active {
+      background: rgba(0, 0, 0, 0.05);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
     /* Download Button (Right) - Initial Inverse State */
     .qs-segmented .qs-guide-btn:last-child {
       background: #1F1F1F;
@@ -378,6 +383,10 @@ if (!window.SwiftSelect.styles) {
       background: #D6D6D6 !important; 
       color: #1F1F1F !important;
       border-color: #1F1F1F !important;
+    }
+    .qs-segmented .qs-guide-btn:last-child:active {
+      background: #000000 !important;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4) !important;
     }
     
     /* Full Page Button specific override needed? 
@@ -428,6 +437,10 @@ if (!window.SwiftSelect.styles) {
       color: #1F1F1F; 
       border: 2px solid #1F1F1F; 
     }
+    .qs-save-btn:active {
+      transform: scale(0.95);
+      background: #000000;
+    }
 
 
     /* =========================================
@@ -456,6 +469,10 @@ if (!window.SwiftSelect.styles) {
       border-color: #ffffff !important;
       /* box-shadow removed by request */
     }
+    .qs-theme-dark .qs-guide-btn:not(.qs-theme-toggle):active {
+      background: rgba(255, 255, 255, 0.15) !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+    }
     
     /* Download Button (Dark) - Initial Inverse State (White) */
     .qs-theme-dark .qs-segmented .qs-guide-btn:last-child {
@@ -468,6 +485,10 @@ if (!window.SwiftSelect.styles) {
       background: #1a1a1a !important;
       color: #ffffff !important;
       border-color: #ffffff !important;
+    }
+    .qs-theme-dark .qs-segmented .qs-guide-btn:last-child:active {
+      background: #cccccc !important;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.2) !important;
     }
     
     /* Fix Specificity for Standalone Buttons (like Full Page) in Dark Mode 
@@ -512,6 +533,11 @@ if (!window.SwiftSelect.styles) {
       background: #1a1a1a !important;
       color: #ffffff !important;
       border: 1px solid #ffffff;
+    }
+    .qs-theme-dark .qs-save-btn:active,
+    .qs-theme-dark .qs-status.qs-success .qs-save-btn:active {
+      transform: scale(0.95) !important;
+      background: #eeeeee !important;
     }
 
     /* Specific Override for Theme Toggle in Dark Mode */
@@ -597,62 +623,47 @@ if (!window.SwiftSelect.styles) {
     */
 
 
-    /* Reference: Box Styles for Glass (Liquid Border - NO GLOW) */
-    /* Reference: Box Styles for Glass (Liquid Border - NO GLOW) */
-    .qs-theme-glass.qs-box {
-        /* INVERSE VISIBILITY STRATEGY (Strong Dark Border + Symmetric Shadows) */
-        border-radius: 6px !important;
-        border: 1px solid rgba(0, 0, 0, 0.2) !important;
-        background-color: transparent !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        
-        /* Symmetric Shadows (Darkened for Light Theme) */
-        box-shadow: 
-            /* GLASS EDGE REFLECTIONS (Inverse) */
-            /* Top Crisp Dark Highlight */
-            inset 0 1px 0 0 rgba(0, 0, 0, 0.6) !important,
-             /* Outer Drop Shadow (No Glow) */
-            0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    }
     /* 
-       VARIANT B: DARK GLASS SELECTION BOX
-       Uses the same "Dark Liquid Glass" variables/shadows as Menu/Toast,
-       but acts as a "Border Only" style (Transparent BG, No Blur).
+       SELECTION BOX - UNIFIED THEME CONTRAST
     */
-    .qs-theme-glass-dark.qs-box,
-    .qs-theme-dark.qs-box.qs-theme-glass {
-        /* REFERENCE VARIABLES (from Dark Liquid Glass Block) */
-       --c-glass: #bbbbbc;
-       --c-light: #fff;
-       --c-dark: #000;
-       --glass-reflex-dark: 2;
-       /* Boost Reflection for Visibility on Transparent Box (0.3 -> 1.2) */
-       --glass-reflex-light: 1.2;
-       /* Boost Reflection for Visibility on Transparent Box (0.3 -> 1.2) */
-       --glass-reflex-light: 1.2;
-       
-       /* VISIBILITY FIX: Softer Physical Border (Base) */
-       border: 1px solid rgba(255, 255, 255, 0.3) !important;
-       border-radius: 6px !important;
-       background-color: transparent !important;
-       backdrop-filter: none !important;
-       -webkit-backdrop-filter: none !important;
-       
-       /* UNIFORM SHADOWS (Reflections Only - No Inner Glow) */
-       box-shadow:
-          /* GLASS EDGE REFLECTIONS */
-          /* Top Crisp White Highlight (0.9) */
-          inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
-          /* Bottom Subtle Rim (0.4) */
-          inset 0 -1px 0 0 rgba(255, 255, 255, 0.4),
-          /* Side Bounds (0.3) */
-          inset 1px 0 0 0 rgba(255, 255, 255, 0.3),
-          inset -1px 0 0 0 rgba(255, 255, 255, 0.3),
-          
-          /* Outer Drop Shadow (No Glow) */
-          0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    .qs-theme-glass.qs-box {
+        border-radius: 6px !important;
+        background-color: transparent !important;
+        backdrop-filter: blur(1.2px) !important;
+        -webkit-backdrop-filter: blur(1.2px) !important;
+        
+        /* THEME-MATCHED BORDER (#224 is the menu text color) */
+        border: 2px solid #224 !important;
+        outline: none !important;
+
+        /* ENHANCED PROFESSIONAL SHADOWS */
+        box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.22),
+            0 4px 12px rgba(0, 0, 0, 0.15),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     }
+
+
+    /* DARK VARIANT SELECTION BOX (Theme-Matched White) */
+    .qs-theme-glass-dark.qs-box {
+        background-color: transparent !important;
+        backdrop-filter: blur(1.2px) !important;
+        -webkit-backdrop-filter: blur(1.2px) !important;
+        
+        /* THEME-MATCHED BORDER (#e1e1e1 is the menu text color) */
+        border: 2px solid #e1e1e1 !important;
+        
+        /* DEEP PRONOUNCED SHADOW */
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+    }
+
+
+
+
+
+
+
+
 
 
 
@@ -701,8 +712,17 @@ if (!window.SwiftSelect.styles) {
     /* Active State (Click Compress) */
     .qs-theme-glass .qs-guide-btn:active,
     .qs-theme-glass .qs-save-btn:active {
-      transform: scale(0.92) !important; 
-      transition: transform 0.1s ease-out;
+      background-color: color-mix(in srgb, var(--c-glass) 48%, transparent) !important;
+      transform: scale(0.96) translateY(1.5px) !important; 
+      box-shadow:
+          inset 0 1px 0 0 color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+          inset 2px 2px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+          inset -1.5px -1.5px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
+          inset -2px -7px 1px -5px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
+          inset -1px 3px 3px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+          inset 0px -3px 1px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+          0px 2px 4px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent) !important;
+      transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1), background 0.1s ease !important;
     }
 
     /* Theme Toggle Button in Glass Mode */
@@ -813,23 +833,22 @@ if (!window.SwiftSelect.styles) {
       animation: spin 1s linear infinite;
     }
     
-    /* HUD */
     .qs-hud {
       position: fixed;
       background: #ffffff;
       color: #1a1a1a;
-      padding: 6px 12px;
+      padding: 6px 16px;
       border-radius: 50px;
-      font-size: 12px;
+      font-size: 13px;
       font-family: 'Google Sans', system-ui, sans-serif;
-      font-weight: 500;
+      font-weight: 700;
       pointer-events: none;
       z-index: 2147483649;
       display: none;
       white-space: nowrap;
       border: 1px solid rgba(0, 0, 0, 0.15);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      line-height: 1;
+      line-height: normal;
       transform: none !important; 
     }
     .qs-theme-dark.qs-hud {
@@ -837,6 +856,39 @@ if (!window.SwiftSelect.styles) {
       color: #ffffff;
       border-color: rgba(255, 255, 255, 0.2);
     }
+    
+    /* GLASS THEME HUD - UNIFIED LIQUID GLASS */
+    .qs-theme-glass.qs-hud {
+      background-color: color-mix(in srgb, var(--c-glass) 36%, transparent) !important;
+      backdrop-filter: blur(8px) url(#glass-blur) saturate(var(--saturation)) !important;
+      -webkit-backdrop-filter: blur(8px) saturate(var(--saturation)) !important;
+      
+      border: none !important; /* Defined by Liquid Shadows */
+      color: var(--c-content) !important;
+      font-weight: 700; /* Match Menu Buttons */
+      padding: 6px 16px;
+      
+      /* EXACT MENU BUTTON SHADOWS */
+      box-shadow:
+          inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+          inset 2px 1px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+          inset -1.5px -1px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
+          inset -2px -6px 1px -5px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
+          inset -1px 2px 3px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+          inset 0px -4px 1px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+          0px 3px 6px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent) !important;
+    }
+
+    .qs-theme-glass-dark.qs-hud {
+       color: #e1e1e1 !important;
+    }
+
+
+
+
+
+
+
 
     /* Flash */
     .qs-flash {
@@ -903,52 +955,26 @@ if (!window.SwiftSelect.styles) {
     .qs-guide-btn:hover .fp-bl { animation: cornerMoveBL 0.5s ease-in-out; }
     .qs-guide-btn:hover .fp-inner-lines { animation: lineWipe 0.6s cubic-bezier(0.2, 0, 0, 1); }
 
-    /* =========================================
-       6. DARK LIQUID GLASS (Ported from Reference)
-       ========================================= */
-
-    /* 
-       Active when .qs-theme-glass-dark is present.
-       Uses advanced color-mix and turbulence filters.
-    */
+    /* -------------------------------------------
+       VARIANT B: DARK GLASS (Specific Overrides)
+       ------------------------------------------- */
     .qs-guide.qs-theme-glass-dark,
     .qs-status.qs-theme-glass-dark,
     .qs-hud.qs-theme-glass-dark {
-       /* REFERENCE VARIABLES (from body.dark-theme) */
        --c-glass: #bbbbbc !important;
        --c-light: #fff !important;
        --c-dark: #000 !important;
        --c-content: #e1e1e1 !important; /* Off-white text */
        --c-action: #03d5ff !important;
        --c-bg: #1b1b1d !important;
-       --glass-reflex-dark: 2 !important;
-       --glass-reflex-light: 0.3 !important;
+       --glass-reflex-dark: 1 !important;
+       --glass-reflex-light: 1 !important;
        --saturation: 150% !important;
 
-       /* CONTAINER STYLE (from .floating-menu) */
-       background-color: color-mix(in srgb, var(--c-glass) 12%, transparent) !important;
-       backdrop-filter: blur(8px) url(#glass-blur) saturate(var(--saturation)) !important;
-       -webkit-backdrop-filter: blur(8px) saturate(var(--saturation)) !important;
-       
-       border: none !important; /* Reference has no physical border, just shadow inset */
-       border-radius: 99em !important;
-       color: var(--c-content) !important;
-       
-       /* COMPLEX SHADOWS (Reference) */
-       box-shadow:
-          inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
-          inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
-          inset -2px -2px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
-          inset -3px -8px 1px -6px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
-          inset -0.3px -1px 4px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent),
-          inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
-          inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
-          inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
-          0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
-          0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent) !important;
-       
-       /* Override generic overrides */
-       z-index: 2147483648 !important;
+       /* 
+          No explicit background-color, backdrop-filter, or box-shadow here!
+          Inherits the "Liquid Layout" from .qs-theme-glass (Variant A)
+       */
     }
 
     /* Remove previous "White Box" pseudo logic if it exists */
@@ -956,46 +982,12 @@ if (!window.SwiftSelect.styles) {
     .qs-status.qs-theme-glass-dark::before,
     .qs-hud.qs-theme-glass-dark::before { display: none !important; }
 
-    /* Glass Surface - Hide if reference implementation does not use it (Reference uses simple single-element + filter) */
-    .qs-guide.qs-theme-glass-dark .qs-glass-surface,
-    .qs-status.qs-theme-glass-dark .qs-glass-surface {
-       display: none !important;
-    }
+    /* BUTTONS - UNIFIED GLASS STYLE (Inherited from Light Glass block) */
+    /* 
+       We don't need to re-define the shadow/animation/background here
+       if the base .qs-theme-glass block handles it using the variables.
+    */
 
-    /* BUTTONS (Reference: .glass-btn.white) */
-    .qs-guide.qs-theme-glass-dark .qs-guide-btn,
-    .qs-guide.qs-theme-glass-dark .qs-segmented .qs-guide-btn,
-    .qs-status.qs-theme-glass-dark .qs-save-btn {
-        background-color: color-mix(in srgb, var(--c-glass) 36%, transparent) !important;
-        color: var(--c-content) !important;
-        border: none !important;
-        
-        box-shadow:
-          inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
-          inset 2px 1px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
-          inset -1.5px -1px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
-          inset -2px -6px 1px -5px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
-          inset -1px 2px 3px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
-          inset 0px -4px 1px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
-          0px 3px 6px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent) !important;
-          
-        transition: transform 0.4s cubic-bezier(0.5, 1.5, 0.5, 1), background-color 0.3s ease, box-shadow 0.3s ease !important;
-    }
-
-    /* Hover State (Reference: .glass-btn.white:hover) */
-    .qs-guide.qs-theme-glass-dark .qs-guide-btn:hover,
-    .qs-guide.qs-theme-glass-dark .qs-segmented .qs-guide-btn:hover,
-    .qs-status.qs-theme-glass-dark .qs-save-btn:hover {
-        background-color: color-mix(in srgb, var(--c-glass) 50%, transparent) !important;
-        transform: scale(1.05) !important;
-    }
-
-    /* Active State (Reference: .glass-btn:active) */
-    .qs-guide.qs-theme-glass-dark .qs-guide-btn:active,
-    .qs-status.qs-theme-glass-dark .qs-save-btn:active {
-        transform: scale(0.9) !important;
-        transition: transform 0.1s ease-out !important;
-    }
 
     /* Icon Colors - Force to Content Color */
     .qs-guide.qs-theme-glass-dark svg,

@@ -8,6 +8,9 @@ if (!window.SwiftSelect.capture) {
     _unrollStyle: null,
     _unrollScrollStyle: null,
     _originalScrollTop: 0,
+    _hiddenStickyElements: [],
+    _innerScrollContainer: null,
+    _innerScrollOriginalStyles: null,
 
     loadImage: function (src) {
       return new Promise((resolve, reject) => {
@@ -255,17 +258,79 @@ if (!window.SwiftSelect.capture) {
 
     // ─── Full Page Helpers ───
 
-    measureFullContentHeight: function () {
-      const docSH = document.documentElement.scrollHeight;
-      const bodySH = document.body.scrollHeight;
-      const winH = window.innerHeight;
+    /**
+     * Detect and neutralize all fixed/sticky elements so they
+     * don't repeat in every captured frame.
+     */
+    neutralizeStickyElements: function () {
+      this._hiddenStickyElements = [];
+      const all = document.querySelectorAll("*");
 
-      if (docSH > winH + 50 || bodySH > winH + 50) {
-        return Math.max(docSH, bodySH);
+      for (const el of all) {
+        if (el.tagName === "STYLE" || el.tagName === "SCRIPT") continue;
+        // Skip our own injected elements
+        if (el.hasAttribute("data-swiftselect-unroll")) continue;
+        if (el.hasAttribute("data-swiftselect-unroll-scroll")) continue;
+        if (el.id === "swift-select-filters") continue;
+
+        const style = window.getComputedStyle(el);
+        const pos = style.position;
+
+        if (pos === "fixed" || pos === "sticky") {
+          this._hiddenStickyElements.push({
+            element: el,
+            originalPosition: el.style.position,
+            originalTop: el.style.top,
+            originalLeft: el.style.left,
+            originalRight: el.style.right,
+            originalBottom: el.style.bottom,
+            originalWidth: el.style.width,
+            originalHeight: el.style.height,
+            originalZIndex: el.style.zIndex,
+            originalVisibility: el.style.visibility,
+            computedPosition: pos,
+          });
+
+          if (pos === "fixed") {
+            // Hide fixed elements entirely — they'd appear in every frame
+            el.style.setProperty("visibility", "hidden", "important");
+          } else {
+            // Sticky → relative: stop it from re-sticking during unroll
+            el.style.setProperty("position", "relative", "important");
+          }
+        }
       }
 
+      console.log(
+        `[SwiftSelect] Neutralized ${this._hiddenStickyElements.length} sticky/fixed elements`,
+      );
+    },
+
+    restoreStickyElements: function () {
+      for (const entry of this._hiddenStickyElements) {
+        const el = entry.element;
+        if (!el.isConnected) continue;
+        el.style.position = entry.originalPosition;
+        el.style.top = entry.originalTop;
+        el.style.left = entry.originalLeft;
+        el.style.right = entry.originalRight;
+        el.style.bottom = entry.originalBottom;
+        el.style.width = entry.originalWidth;
+        el.style.height = entry.originalHeight;
+        el.style.zIndex = entry.originalZIndex;
+        el.style.visibility = entry.originalVisibility;
+      }
+      this._hiddenStickyElements = [];
+    },
+
+    /**
+     * Find the primary inner scroll container, if one exists.
+     * Returns the element or null if the page scrolls at document level.
+     */
+    findInnerScrollContainer: function () {
+      const winH = window.innerHeight;
+      const winW = window.innerWidth;
       const allElements = document.querySelectorAll("*");
-      let bestHeight = 0;
       let bestElement = null;
       let bestArea = 0;
 
@@ -278,19 +343,35 @@ if (!window.SwiftSelect.capture) {
           const r = el.getBoundingClientRect();
           if (r.width > 0 && r.height > 0) {
             const area = r.width * r.height;
-            if (area > bestArea && area > winH * window.innerWidth * 0.2) {
+            if (area > bestArea && area > winH * winW * 0.2) {
               bestArea = area;
-              bestHeight = el.scrollHeight;
               bestElement = el;
             }
           }
         }
       }
 
-      if (bestElement) {
-        bestElement.scrollTo({ top: 0, behavior: "instant" });
-        const nonScrollerHeight = winH - bestElement.clientHeight;
-        return bestHeight + nonScrollerHeight;
+      return bestElement;
+    },
+
+    measureFullContentHeight: function () {
+      const docSH = document.documentElement.scrollHeight;
+      const bodySH = document.body.scrollHeight;
+      const winH = window.innerHeight;
+
+      // First check for inner scroll containers (SPAs like GitHub Copilot)
+      const innerScroller = this.findInnerScrollContainer();
+      if (innerScroller) {
+        this._innerScrollContainer = innerScroller;
+        innerScroller.scrollTo({ top: 0, behavior: "instant" });
+        const nonScrollerHeight = winH - innerScroller.clientHeight;
+        return innerScroller.scrollHeight + nonScrollerHeight;
+      }
+
+      this._innerScrollContainer = null;
+
+      if (docSH > winH + 50 || bodySH > winH + 50) {
+        return Math.max(docSH, bodySH);
       }
 
       return Math.max(docSH, bodySH, winH);
@@ -307,6 +388,35 @@ if (!window.SwiftSelect.capture) {
       const heightCSS = contentHeight
         ? `height: ${contentHeight}px !important;`
         : "";
+
+      // If we have an inner scroll container, we need to unroll IT, not just html
+      const innerScroller = this._innerScrollContainer;
+      let innerScrollerCSS = "";
+
+      if (innerScroller) {
+        // Store original styles for restoration
+        this._innerScrollOriginalStyles = {
+          overflow: innerScroller.style.overflow,
+          overflowY: innerScroller.style.overflowY,
+          maxHeight: innerScroller.style.maxHeight,
+          height: innerScroller.style.height,
+        };
+
+        // Flatten the inner scroller: remove overflow clipping,
+        // let its full content render, so translate3d on <html>
+        // can actually reveal it
+        innerScroller.style.setProperty("overflow", "visible", "important");
+        innerScroller.style.setProperty("overflow-y", "visible", "important");
+        innerScroller.style.setProperty("max-height", "none", "important");
+        innerScroller.style.setProperty(
+          "height",
+          innerScroller.scrollHeight + "px",
+          "important",
+        );
+
+        // Also scroll it to top
+        innerScroller.scrollTo({ top: 0, behavior: "instant" });
+      }
 
       this._unrollStyle.textContent = `
       * {
@@ -333,6 +443,36 @@ if (!window.SwiftSelect.capture) {
       * { scrollbar-width: none !important; }
     `;
       document.head.appendChild(this._unrollStyle);
+
+      // Neutralize sticky/fixed elements AFTER CSS is applied
+      this.neutralizeStickyElements();
+    },
+
+    removeUnrollCSS: function () {
+      // Restore sticky elements first
+      this.restoreStickyElements();
+
+      // Restore inner scroll container
+      if (this._innerScrollContainer && this._innerScrollOriginalStyles) {
+        const el = this._innerScrollContainer;
+        const orig = this._innerScrollOriginalStyles;
+        el.style.overflow = orig.overflow;
+        el.style.overflowY = orig.overflowY;
+        el.style.maxHeight = orig.maxHeight;
+        el.style.height = orig.height;
+        this._innerScrollContainer = null;
+        this._innerScrollOriginalStyles = null;
+      }
+
+      if (this._unrollStyle) {
+        this._unrollStyle.remove();
+        this._unrollStyle = null;
+      }
+      if (this._unrollScrollStyle) {
+        this._unrollScrollStyle.remove();
+        this._unrollScrollStyle = null;
+      }
+      window.scrollTo(0, this._originalScrollTop);
     },
 
     setUnrollPosition: function (scrollTop) {
@@ -346,18 +486,6 @@ if (!window.SwiftSelect.capture) {
       html { --scroll-top: ${-scrollTop}px !important; }
     `;
       document.head.appendChild(this._unrollScrollStyle);
-    },
-
-    removeUnrollCSS: function () {
-      if (this._unrollStyle) {
-        this._unrollStyle.remove();
-        this._unrollStyle = null;
-      }
-      if (this._unrollScrollStyle) {
-        this._unrollScrollStyle.remove();
-        this._unrollScrollStyle = null;
-      }
-      window.scrollTo(0, this._originalScrollTop);
     },
 
     handleUnrollPage: function () {
@@ -482,50 +610,6 @@ if (!window.SwiftSelect.capture) {
         const response = await fetch(result.dataUrl);
         this.lastBlob = await response.blob();
 
-        try {
-          // Try to write JPEG directly (Chrome 76+)
-          await navigator.clipboard.write([
-            new ClipboardItem({ [this.lastBlob.type]: this.lastBlob }),
-          ]);
-        } catch (clipboardErr) {
-          console.warn(
-            "JPEG Clipboard write failed. Falling back to PNG...",
-            clipboardErr,
-          );
-
-          try {
-            // Fallback: Convert JPEG Blob -> Image -> Canvas -> PNG Blob
-            const img = await this.loadImage(
-              URL.createObjectURL(this.lastBlob),
-            );
-            const canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0);
-
-            const pngBlob = await new Promise((res, rej) =>
-              canvas.toBlob(
-                (b) => (b ? res(b) : rej(new Error("PNG conversion failed"))),
-                "image/png",
-              ),
-            );
-
-            await navigator.clipboard.write([
-              new ClipboardItem({ "image/png": pngBlob }),
-            ]);
-            console.log("Fallback to PNG clipboard successful");
-          } catch (fallbackErr) {
-            console.error("Clipboard fallback failed:", fallbackErr);
-            window.SwiftSelect.ui.setStatus(
-              "Saved to file (Clipboard failed)",
-              5000,
-              "saved",
-            );
-            // Non-fatal, we still download the file
-          }
-        }
-
         window.SwiftSelect.ui.updateBadge("100%");
         if (btn) {
           btn.classList.remove("qs-loading");
@@ -548,12 +632,46 @@ if (!window.SwiftSelect.capture) {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
+        const clipSuccess = result.clipboardSuccess;
+
         window.SwiftSelect.ui.updateBadge("✓", "#198754");
-        window.SwiftSelect.ui.setStatus(
-          "Page Saved Successfully",
-          5000,
-          "saved",
-        );
+        if (clipSuccess) {
+          window.SwiftSelect.ui.setStatus(
+            "Page Saved & Copied Successfully",
+            5000,
+            "saved",
+          );
+        } else {
+          // Automated copy restricted by browser; provide high-quality manual action
+          window.SwiftSelect.ui.setStatus(
+            "Page Saved! Click to Copy Image",
+            8000,
+            "saved",
+            {
+              label: "Copy Image",
+              onclick: async () => {
+                try {
+                  const item = new ClipboardItem({
+                    "image/png": this.lastBlob,
+                  });
+                  await navigator.clipboard.write([item]);
+                  window.SwiftSelect.ui.setStatus(
+                    "Copied to Clipboard!",
+                    2000,
+                    "saved",
+                  );
+                } catch (err) {
+                  // This is rare after a fresh click
+                  window.SwiftSelect.ui.setStatus(
+                    "Copy Failed. Please try again.",
+                    3000,
+                    "error",
+                  );
+                }
+              },
+            },
+          );
+        }
         setTimeout(() => window.SwiftSelect.ui.updateBadge(""), 3000);
 
         document.documentElement.style.cursor = "";
@@ -562,8 +680,16 @@ if (!window.SwiftSelect.capture) {
         window.SwiftSelect.ui.cleanup();
         window.SwiftSelect.events.removeListeners();
       } catch (err) {
+        if (err.message?.includes("Extension context invalidated")) {
+          window.SwiftSelect.ui.setStatus(
+            "Extension updated. Please refresh this page.",
+            8000,
+            "error",
+          );
+          return;
+        }
         console.error("Full page capture error:", err);
-        this.removeUnrollCSS();
+        this.handleRestoreUnroll();
         window.SwiftSelect.ui.updateBadge("ERR", "#DC3545");
         setTimeout(() => window.SwiftSelect.ui.updateBadge(""), 3000);
 

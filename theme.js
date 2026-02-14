@@ -48,14 +48,20 @@ if (!window.SwiftSelect.theme) {
         }
       });
 
-      observer.observe(document.documentElement, {
+      const config = {
         attributes: true,
-        attributeFilter: ["class", "style", "data-theme"],
-      });
-      observer.observe(document.body, {
-        attributes: true,
-        attributeFilter: ["class", "style", "data-theme"],
-      });
+        attributeFilter: [
+          "class",
+          "style",
+          "data-theme",
+          "data-mode",
+          "data-color-mode",
+          "data-color-scheme",
+        ],
+      };
+
+      observer.observe(document.documentElement, config);
+      observer.observe(document.body, config);
     },
 
     handleThemeToggle: function () {
@@ -121,43 +127,99 @@ if (!window.SwiftSelect.theme) {
     },
 
     isPageDark: function () {
-      // 1. Check Page Brightness via Computed Style
       try {
-        const getBrightness = (el) => {
-          if (!el) return null;
+        // ── LEVEL 1: EXPLICIT CSS SIGNALS ──
+        const roots = [document.documentElement, document.body];
+        if (
+          roots.some(
+            (r) => r && window.getComputedStyle(r).colorScheme === "dark",
+          )
+        )
+          return true;
+
+        // ── LEVEL 2: VISUAL STACK "X-RAY" ──
+        // Get the entire stack of elements at the center of the screen.
+        // This handles z-index layers and absolute positioning correctly.
+        const x = window.innerWidth / 2;
+        const y = window.innerHeight / 2;
+        const stack = document.elementsFromPoint(x, y);
+
+        for (const el of stack) {
+          // 1. Ignore our own UI and small noisy elements (icons/buttons)
+          if (
+            el.className &&
+            typeof el.className === "string" &&
+            el.className.includes("qs-")
+          )
+            continue;
+          if (el.clientWidth < 100 || el.clientHeight < 100) continue;
+
+          // 2. Check Background Color
           const style = window.getComputedStyle(el);
-          const color = style.backgroundColor;
-          const rgb = color.match(/\d+/g);
-          if (rgb && rgb.length >= 3) {
-            const a = rgb.length > 3 ? parseFloat(rgb[3]) : 1;
-            if (a < 0.1) return null; // Transparent
-            return (
-              0.2126 * parseInt(rgb[0]) +
-              0.7152 * parseInt(rgb[1]) +
-              0.0722 * parseInt(rgb[2])
-            );
+          const bgLuma = this._parseLuma(style.backgroundColor);
+
+          // If we find a SOLID, OPAQUE background on a large element, we trust it.
+          if (bgLuma !== null) {
+            if (bgLuma < 100) return true; // Dark Background found
+            if (bgLuma > 200) return false; // Light Background found
+            // If it's mid-grey or semi-transparent, we continue down the stack
           }
-          return null;
-        };
-
-        let luma = getBrightness(document.body);
-        if (luma === null) luma = getBrightness(document.documentElement);
-
-        if (luma !== null) {
-          return luma < 128; // < 128 is Dark
         }
 
-        // 2. Fallback: Prefers-Color-Scheme
-        if (
+        // ── LEVEL 3: TEXT CONTRAST FALLBACK ──
+        // If we are here, the background is effectively transparent (or an Image/Canvas).
+        // We look at the Text Color of the topmost content element.
+        for (const el of stack) {
+          // Find the first element with actual text content
+          if (el.innerText && el.innerText.trim().length > 0) {
+            const textLuma = this._parseLuma(window.getComputedStyle(el).color);
+            if (textLuma !== null) {
+              if (textLuma > 200) return true; // White Text = Dark Mode
+              if (textLuma < 80) return false; // Black Text = Light Mode
+            }
+            break; // We only care about the top layer's text
+          }
+        }
+
+        // ── LEVEL 4: SYSTEM DEFAULT ──
+        return (
           window.matchMedia &&
           window.matchMedia("(prefers-color-scheme: dark)").matches
-        ) {
-          return true;
-        }
+        );
       } catch (e) {
-        console.error("isPageDark error:", e);
+        return false;
       }
-      return false; // Default to Light
+    },
+
+    // Refined Luma Parser (Stricter transparency)
+    _parseLuma: function (colorStr) {
+      if (!colorStr) return null;
+
+      // Handle "transparent" keyword
+      if (colorStr === "transparent" || colorStr === "rgba(0, 0, 0, 0)")
+        return null;
+
+      // Handle simple Hex
+      if (colorStr.startsWith("#")) {
+        const hex = colorStr.slice(1);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return 0.299 * r + 0.587 * g + 0.114 * b;
+      }
+
+      // Handle rgb/rgba
+      const match = colorStr.match(/(\d+(\.\d+)?)/g);
+      if (!match || match.length < 3) return null;
+
+      const r = parseFloat(match[0]);
+      const g = parseFloat(match[1]);
+      const b = parseFloat(match[2]);
+      const a = match.length > 3 ? parseFloat(match[3]) : 1;
+
+      if (a < 0.1) return null; // Treat low opacity as no color
+
+      return 0.299 * r + 0.587 * g + 0.114 * b;
     },
   };
 }

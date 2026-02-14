@@ -73,6 +73,21 @@ class FrameGrabber {
   }
 }
 
+// ─── Clipboard Helper ────────────────────────────────────────────────
+
+/**
+ * Silently attempt to write to the clipboard.
+ * No logging or focus-stealing; just a best-effort attempt.
+ */
+async function writeToClipboardSilent(blob) {
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 // ─── Main Capture Logic ──────────────────────────────────────────────
 
 /**
@@ -271,14 +286,21 @@ async function captureFullPage(
 
       logicalY = nextY;
     }
-  } finally {
-    // 4. Restore the page
-    await sendToContent(tabId, "restore-unroll");
-    stream.getTracks().forEach((t) => t.stop());
+  } catch (err) {
+    console.error("[offscreen] Capture loop error:", err);
+    // Continue to stitching if we have some frames, or cleanup and rethrow
+    if (frames.length === 0) {
+      stream.getTracks().forEach((t) => t.stop());
+      await sendToContent(tabId, "restore-unroll");
+      throw err;
+    }
   }
-
   // 5. Stitch frames onto canvas
-  if (frames.length === 0) throw new Error("No frames captured");
+  if (frames.length === 0) {
+    stream.getTracks().forEach((t) => t.stop());
+    await sendToContent(tabId, "restore-unroll");
+    throw new Error("No frames captured");
+  }
 
   const fullPixelHeight = frames[frames.length - 1].dy + contentH;
   const targetHeight = Math.ceil(rectHeight * dpr);
@@ -289,8 +311,6 @@ async function captureFullPage(
   canvas.height = canvasHeight;
   const ctx = canvas.getContext("2d", { alpha: false });
 
-  // Pre-fill canvas with the page's background color to prevent
-  // dark bands in areas where frames don't fully cover
   if (meta.bgColor) {
     ctx.fillStyle = meta.bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -305,7 +325,22 @@ async function captureFullPage(
     bitmap.close();
   }
 
-  // Convert to data URL with requested format and quality
+  // --- Internal Clipboard Write (Silent Attempt) ---
+  let clipboardSuccess = false;
+  try {
+    const pngBlob = await new Promise((r) => canvas.toBlob(r, "image/png"));
+    if (pngBlob) {
+      clipboardSuccess = await writeToClipboardSilent(pngBlob);
+    }
+  } catch (err) {
+    // Silently fail
+  }
+
+  // 6. Cleanup stream and page
+  stream.getTracks().forEach((t) => t.stop());
+  await sendToContent(tabId, "restore-unroll");
+
+  // Final Data URL for download
   const dataUrl = await new Promise((r) => {
     canvas.toBlob(
       (blob) => {
@@ -318,7 +353,7 @@ async function captureFullPage(
     );
   });
 
-  return dataUrl;
+  return { dataUrl, clipboardSuccess };
 }
 
 // ─── Message Listener ────────────────────────────────────────────────
@@ -332,8 +367,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       format || "image/png",
       quality || 1.0,
     )
-      .then((dataUrl) => {
-        sendResponse({ success: true, dataUrl });
+      .then((result) => {
+        sendResponse({ success: true, ...result });
       })
       .catch((err) => {
         console.error("Offscreen capture error:", err);

@@ -78,8 +78,9 @@ async function ensureOffscreen() {
 
   offscreenCreating = chrome.offscreen.createDocument({
     url: "offscreen.html",
-    reasons: ["USER_MEDIA"],
-    justification: "Tab capture for full page screenshot",
+    reasons: ["USER_MEDIA", "CLIPBOARD"],
+    justification:
+      "Tab capture for full page screenshot and clipboard write support",
   });
 
   await offscreenCreating;
