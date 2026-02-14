@@ -1,10 +1,17 @@
 <div align="center">
 
-# ⚡ SwiftSelect
+<br>
 
-**Snap it. Copy it. Save it. Done.**
+<img src="icons/icon128.png" alt="SwiftSelect" width="96">
 
-The fastest way to capture, copy, and download screenshots in Chrome.
+<br><br>
+
+# SwiftSelect
+
+**Capture · Copy · Download — in one motion.**
+
+The fastest screenshot tool for Chrome. Select a region, grab the viewport, or scroll-capture an entire page.
+<br>Everything lands on your clipboard automatically.
 
 <br>
 
@@ -14,77 +21,138 @@ The fastest way to capture, copy, and download screenshots in Chrome.
 
 <br><br>
 
-![Version](https://img.shields.io/badge/version-1.4.8-1F1F1F?style=flat-square)
-![Chrome](https://img.shields.io/badge/Chrome-MV3-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
+![Version](https://img.shields.io/badge/version-1.4.9-0d1117?style=flat-square&labelColor=161b22)
+![Manifest](https://img.shields.io/badge/Manifest-V3-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)
+![JS](https://img.shields.io/badge/JavaScript-100%25-f7df1e?style=flat-square&logo=javascript&logoColor=000)
 
 </div>
 
 <br>
 
-## What it does
-
-SwiftSelect gives you three ways to capture any webpage:
-
-🎯 **Select a region** — Draw a box around anything on screen. Copied to clipboard instantly.
-
-👁️ **Visible area** — One click captures everything you see. Copy + download.
-
-📄 **Full page** — Captures the *entire* scrollable page, top to bottom. Even on complex apps like Gemini, Slack, or Notion.
-
-Everything is copied to your clipboard automatically. No extra clicks, no annoying editors, no bloat.
+---
 
 <br>
 
-## How to use it
+## Why SwiftSelect
 
-**Press `Alt + X`** to activate. That's it.
+Most screenshot extensions are slow, cluttered, or want you to sign up for something. SwiftSelect does exactly three things and does them instantly:
 
-A floating toolbar appears in the top-right corner with three buttons:
+| Mode              | What happens                                     | Output                                  |
+| :---------------- | :----------------------------------------------- | :-------------------------------------- |
+| **Region Select** | Draw a box around anything on the page           | Copied to clipboard                     |
+| **Visible Area**  | Captures the current viewport in one click       | Copied to clipboard + optional download |
+| **Full Page**     | Scrolls the entire page and stitches it together | Saved as a file                         |
 
-| Button | What it does |
-|:---|:---|
-| 👁️ **Visible Area** | Captures the current viewport and copies to clipboard |
-| ⬇️ **Download** | Captures, copies to clipboard, *and* saves the file |
-| 📄 **Full Page** | Scrolls and captures the entire page, then saves it |
-
-Or just **drag to select** any region of the page.
+Full-page capture works on complex SPAs — Notion, Slack, Gemini, you name it.
 
 <br>
 
-## Handy tricks
+## Keyboard Shortcuts
 
-| Shortcut | What happens |
-|:---|:---|
-| `Alt + X` | Open SwiftSelect |
-| `Escape` | Cancel and close |
-| Hold `Shift` while dragging | Perfect square selection |
-| Hold `Space` while dragging | Move the selection box around |
-| Hold `Ctrl` / `⌘` and hover | Auto-detect and highlight elements (images, cards, videos, etc.) — click to capture |
+Every action has a shortcut. No toolbar hunting required.
+
+| Shortcut                      | Action                                            |
+| :---------------------------- | :------------------------------------------------ |
+| <kbd>Alt</kbd> + <kbd>X</kbd> | Activate SwiftSelect (opens the floating toolbar) |
+| <kbd>Alt</kbd> + <kbd>S</kbd> | Capture visible area & download                   |
+| <kbd>Alt</kbd> + <kbd>F</kbd> | Capture full page & download                      |
+| <kbd>Esc</kbd>                | Cancel and close                                  |
 
 <br>
 
-## Light & dark mode
+## Selection Modifiers
 
-Click the 🌙 / ☀️ button on the toolbar to switch themes. Your choice is remembered.
+While dragging a region selection, hold a modifier key to change behavior:
+
+| Hold                                   | Effect                                                          |
+| :------------------------------------- | :-------------------------------------------------------------- |
+| <kbd>Shift</kbd>                       | Constrain to a perfect square                                   |
+| <kbd>Space</kbd>                       | Reposition the selection box mid-drag                           |
+| <kbd>Ctrl</kbd> / <kbd>⌘</kbd> + hover | Auto-detect elements (images, cards, videos) — click to capture |
+
+<br>
+
+## Theming
+
+The floating toolbar includes a light/dark toggle. Your preference persists across sessions via `chrome.storage`.
 
 <br>
 
 ## Install
 
-### Chrome Web Store (recommended)
+### ► Chrome Web Store _(recommended)_
 
-👉 [**Get SwiftSelect on Chrome Web Store**](https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec)
+<a href="https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec">
+  <img src="https://img.shields.io/badge/Install_SwiftSelect-Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Install from Chrome Web Store">
+</a>
 
-### From source
+### ► From Source
 
-1. Clone this repo
-   ```bash
-   git clone https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git
-   ```
-2. Go to `chrome://extensions/`
-3. Turn on **Developer mode** (top right)
-4. Click **Load unpacked** → select the cloned folder
-5. Pin SwiftSelect from the extensions menu
+```bash
+git clone https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git
+```
+
+1. Navigate to `chrome://extensions/`
+2. Enable **Developer mode** (top-right toggle)
+3. Click **Load unpacked** → select the cloned directory
+4. Pin SwiftSelect from the extensions menu — done
+
+<br>
+
+<details>
+<summary><strong>Project Structure</strong></summary>
+
+<br>
+
+```
+SwiftSelect/
+├── manifest.json        # Extension config (MV3)
+├── background.js        # Service worker entry
+├── bg.js                # Core background logic
+├── contentScript.js     # Page injection
+├── capture.js           # Screenshot capture engine
+├── events.js            # Input & event handling
+├── ui.js                # Toolbar & overlay rendering
+├── styles.js            # Dynamic style injection
+├── theme.js             # Light/dark theme logic
+├── popup.html / .js     # Extension popup
+├── menu.html            # Context menu UI
+├── offscreen.html / .js # Offscreen document for clipboard ops
+└── icons/               # Extension icons
+```
+
+</details>
+
+<details>
+<summary><strong>Permissions & Why</strong></summary>
+
+<br>
+
+| Permission       | Reason                                                           |
+| :--------------- | :--------------------------------------------------------------- |
+| `activeTab`      | Access the current tab to capture content                        |
+| `scripting`      | Inject the capture overlay into pages                            |
+| `tabs`           | Query tab state for multi-step captures                          |
+| `tabCapture`     | Capture visible tab content as an image                          |
+| `clipboardWrite` | Copy screenshots to clipboard automatically                      |
+| `offscreen`      | Create an offscreen document for clipboard API (MV3 requirement) |
+| `storage`        | Persist user preferences (theme, etc.)                           |
+| `<all_urls>`     | Operate on any webpage                                           |
+
+</details>
+
+<br>
+
+## Contributing
+
+Found a bug or have a feature idea? [Open an issue](https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots/issues). Pull requests are welcome.
+
+<br>
+
+## License
+
+[MIT](LICENSE.txt) © 2026 [arsalan06106](https://github.com/arsalan06106)
 
 <br>
 
@@ -92,8 +160,12 @@ Click the 🌙 / ☀️ button on the toolbar to switch themes. Your choice is r
 
 <div align="center">
 
-**Made by [@arsalan06106](https://github.com/arsalan06106)**
+<br>
 
-If you find it useful, a ⭐ on the repo means a lot.
+**Built by [@arsalan06106](https://github.com/arsalan06106)**
+
+If SwiftSelect saves you time, consider leaving a ★ on the repo.
+
+<br>
 
 </div>

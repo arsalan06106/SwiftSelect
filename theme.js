@@ -2,16 +2,31 @@ if (!window.SwiftSelect) window.SwiftSelect = {};
 
 if (!window.SwiftSelect.theme) {
   window.SwiftSelect.theme = {
-    currentUserTheme: "light", // Default
+    currentUserTheme: "glass", // Default
 
     init: function () {
       if (chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get("userTheme", (data) => {
-          if (data.userTheme) {
-            this.currentUserTheme = data.userTheme;
-          }
-          this.applyTheme(this.currentUserTheme);
-        });
+        chrome.storage.local.get(
+          ["userTheme", "glassThemeMigrated"],
+          (data) => {
+            // MIGRATION: Force "glass" theme once for all users (new & existing)
+            if (!data.glassThemeMigrated) {
+              this.currentUserTheme = "glass";
+              this.applyTheme("glass");
+              chrome.storage.local.set({
+                userTheme: "glass",
+                glassThemeMigrated: true,
+              });
+            } else if (data.userTheme) {
+              // Normal behavior after migration: Respect user choice
+              this.currentUserTheme = data.userTheme;
+              this.applyTheme(this.currentUserTheme);
+            } else {
+              // Fallback for new users (post-migration logic)
+              this.applyTheme(this.currentUserTheme);
+            }
+          },
+        );
       }
 
       // Listener for System/Browser Theme Changes
@@ -59,46 +74,41 @@ if (!window.SwiftSelect.theme) {
       const guideEl = window.SwiftSelect.ui?.guideEl;
       const hudEl = window.SwiftSelect.ui?.hudEl;
       const statusEl = window.SwiftSelect.ui?.statusEl;
+      const boxEl = window.SwiftSelect.ui?.box;
 
       // if (!guideEl) return; // Allow updating status/hud even if guide is missing
 
       // Reset classes first
-      if (guideEl) {
-        guideEl.classList.remove(
-          "qs-theme-dark",
-          "qs-theme-glass",
-          "qs-glass-contrast",
-          "qs-theme-glass-dark",
-        );
-      }
-      if (statusEl)
-        statusEl.classList.remove(
-          "qs-theme-dark",
-          "qs-theme-glass",
-          "qs-glass-contrast",
-          "qs-theme-glass-dark",
-        );
-      if (hudEl) hudEl.classList.remove("qs-theme-dark", "qs-theme-glass-dark");
+      const elements = [guideEl, statusEl, hudEl, boxEl];
+      elements.forEach((el) => {
+        if (el) {
+          el.classList.remove(
+            "qs-theme-dark",
+            "qs-theme-glass",
+            "qs-theme-glass-dark",
+            "qs-glass-contrast",
+          );
+        }
+      });
 
       if (theme === "dark") {
-        if (guideEl) guideEl.classList.add("qs-theme-dark");
-        if (statusEl) statusEl.classList.add("qs-theme-dark");
-        if (hudEl) hudEl.classList.add("qs-theme-dark");
+        elements.forEach((el) => {
+          if (el) el.classList.add("qs-theme-dark");
+        });
       } else if (theme === "glass") {
         // Adaptive Glass: Check Site Theme
         const isDarkSite = this.isPageDark();
 
         if (isDarkSite) {
           // Glass Dark
-          if (guideEl)
-            guideEl.classList.add("qs-theme-glass", "qs-theme-glass-dark");
-          if (statusEl)
-            statusEl.classList.add("qs-theme-glass", "qs-theme-glass-dark");
-          if (hudEl) hudEl.classList.add("qs-theme-glass-dark");
+          elements.forEach((el) => {
+            if (el) el.classList.add("qs-theme-glass", "qs-theme-glass-dark");
+          });
         } else {
           // Glass Light
-          if (guideEl) guideEl.classList.add("qs-theme-glass");
-          if (statusEl) statusEl.classList.add("qs-theme-glass");
+          elements.forEach((el) => {
+            if (el) el.classList.add("qs-theme-glass");
+          });
         }
       }
       // 'light' is default (no classes added)

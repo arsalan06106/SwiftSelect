@@ -99,6 +99,12 @@ if (!window.SwiftSelect.ui) {
         this.highlighterEl = el;
       }
 
+      if (!this.boxHost) {
+        const { host, el } = this.makeShadowOverlay("div", "qs-box");
+        this.boxHost = host;
+        this.box = el;
+      }
+
       if (!this.hudHost) {
         const { host, el } = this.makeShadowOverlay("div", "qs-hud");
         this.hudHost = host;
