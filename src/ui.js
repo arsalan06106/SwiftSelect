@@ -79,18 +79,25 @@ export let isUpdating = false;
 export let lastHudText = "";
 export let pendingRect = null;
 
-export function makeShadowOverlay(tag, className, innerHTML = "") {
+export function makeShadowOverlay(
+  tag,
+  className,
+  innerHTML = "",
+  autoShow = true,
+) {
   const host = document.createElement("div");
   host.style.position = "fixed";
   host.style.zIndex = "2147483647";
   host.style.pointerEvents = "none";
   host.style.inset = "0";
+  host.style.display = "none"; // Start hidden to prevent flash
   document.body.appendChild(host);
 
   const shadow = host.attachShadow({ mode: "open" });
   const el = document.createElement(tag);
   el.className = className;
   if (innerHTML) el.innerHTML = innerHTML;
+  el.style.opacity = "0"; // Second layer of flash protection
   shadow.appendChild(el);
 
   (async () => {
@@ -98,6 +105,14 @@ export function makeShadowOverlay(tag, className, innerHTML = "") {
     if (qsSheet) {
       shadow.adoptedStyleSheets = [qsSheet];
     }
+    // Restore layout only if autoShow is requested
+    if (autoShow) {
+      host.style.display = "block";
+    }
+    // Allow CSS to take over
+    setTimeout(() => {
+      if (el) el.style.opacity = "";
+    }, 0);
   })();
 
   return { host, el, shadow };
@@ -157,16 +172,17 @@ export function ensureUi() {
   }
 
   if (!statusHost) {
-    const { host, el } = makeShadowOverlay("div", "qs-status");
+    const { host, el } = makeShadowOverlay("div", "qs-status", "", false);
     statusHost = host;
     statusEl = el;
     statusHost.style.display = "none";
   }
 
   if (!highlighterHost) {
-    const { host, el } = makeShadowOverlay("div", "qs-highlighter");
+    const { host, el } = makeShadowOverlay("div", "qs-highlighter", "", false);
     highlighterHost = host;
     highlighterEl = el;
+    highlighterHost.style.display = "none";
   }
 
   if (hudEl) {
