@@ -36,14 +36,7 @@ async function injectAndStart(tab, messageType) {
     const tabId = tab.id;
     await chrome.scripting.executeScript({
       target: { tabId },
-      files: [
-        "styles.js",
-        "theme.js",
-        "ui.js",
-        "capture.js",
-        "events.js",
-        "contentScript.js",
-      ],
+      files: ["contentScript.js"],
     });
 
     chrome.tabs.sendMessage(tabId, { type: messageType }, () => {

@@ -14,7 +14,8 @@
   ],
   "host_permissions": ["<all_urls>"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
     "default_title": "SwiftSelect",
@@ -49,7 +50,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["styles.css"],
+      "resources": ["styles.css", "src/*"],
       "matches": ["<all_urls>"]
     }
   ]

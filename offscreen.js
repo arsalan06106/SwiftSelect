@@ -84,6 +84,7 @@ async function writeToClipboardSilent(blob) {
     await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
     return true;
   } catch (e) {
+    console.debug("offscreen: Silent clipboard write failed:", e);
     return false;
   }
 }
@@ -95,9 +96,14 @@ async function writeToClipboardSilent(blob) {
  */
 function sendToContent(tabId, action, data = {}) {
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(`Timeout waiting for content script (${action})`));
+    }, 10000);
+
     chrome.runtime.sendMessage(
       { type: "offscreen-to-content", tabId, action, data },
       (response) => {
+        clearTimeout(timeout);
         if (chrome.runtime.lastError) {
           reject(new Error(chrome.runtime.lastError.message));
         } else {
@@ -341,20 +347,14 @@ async function captureFullPage(
   stream.getTracks().forEach((t) => t.stop());
   await sendToContent(tabId, "restore-unroll");
 
-  // Final Data URL for download
-  const dataUrl = await new Promise((r) => {
-    canvas.toBlob(
-      (blob) => {
-        const reader = new FileReader();
-        reader.onload = () => r(reader.result);
-        reader.readAsDataURL(blob);
-      },
-      format,
-      quality,
-    );
-  });
+  // Final Blob for download
+  const blob = await new Promise((r) => canvas.toBlob(r, format, quality));
+  const blobUrl = URL.createObjectURL(blob);
 
-  return { dataUrl, clipboardSuccess };
+  // Note: We don't revoke here because the UI process needs time to fetch/download it.
+  // Revocation should happen after download or when capture finishes in fullpage.js.
+
+  return { blobUrl, clipboardSuccess };
 }
 
 // ─── Message Listener ────────────────────────────────────────────────
