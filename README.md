@@ -15,9 +15,7 @@ The fastest screenshot tool for Chrome. Select a region, grab the viewport, or s
 
 <br>
 
-<a href="https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec">
-  <img src="https://img.shields.io/chrome-web-store/v/aboceojignbeaclebdpjjgkocmdldoec?style=for-the-badge&logo=googlechrome&logoColor=white&label=Chrome%20Web%20Store&color=4285F4" alt="Chrome Web Store">
-</a>
+[![Chrome](https://raw.githubusercontent.com/creosB/creosB/refs/heads/main/assets/Chrome%20Web%20Store.svg)](https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec)
 
 <br><br>
 
