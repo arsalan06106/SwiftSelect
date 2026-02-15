@@ -17,13 +17,6 @@ The fastest screenshot tool for Chrome. Select a region, grab the viewport, or s
 
 [![Chrome](https://raw.githubusercontent.com/creosB/creosB/refs/heads/main/assets/Chrome%20Web%20Store.svg)](https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec)
 
-<br><br>
-
-![Version](https://img.shields.io/badge/version-1.4.9-0d1117?style=flat-square&labelColor=161b22)
-![Manifest](https://img.shields.io/badge/Manifest-V3-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)
-![JS](https://img.shields.io/badge/JavaScript-100%25-f7df1e?style=flat-square&logo=javascript&logoColor=000)
-
 </div>
 
 <br>
@@ -79,13 +72,13 @@ The floating toolbar includes a light/dark toggle. Your preference persists acro
 
 ## Install
 
-### ► Chrome Web Store _(recommended)_
+### ◈ Chrome Web Store (recommended)
 
 <a href="https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec">
   <img src="https://img.shields.io/badge/Install_SwiftSelect-Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Install from Chrome Web Store">
 </a>
 
-### ► From Source
+### ◈ From Source
 
 ```bash
 git clone https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git
@@ -143,7 +136,8 @@ SwiftSelect/
 
 ## Contributing
 
-Found a bug or have a feature idea? [Open an issue](https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots/issues). Pull requests are welcome.
+Found a bug or have a feature idea? [Open an issue](https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots/issues).
+Pull requests are welcome.
 
 <br>
 
