@@ -8,6 +8,7 @@ if (!window.SwiftSelect.styles) {
        ========================================= */
     
     /* UI Overlay */
+    /* UI Overlay Host */
     .qs-ovl {
       all: initial;
       position: fixed;
@@ -16,20 +17,45 @@ if (!window.SwiftSelect.styles) {
       cursor: crosshair !important;
       user-select: none;
       pointer-events: auto;
+      overflow: hidden;
+      contain: layout size style; /* Isolate from main page layout */
     }
     .qs-ovl * {
       cursor: crosshair !important;
+    }
+    
+    .qs-curtain {
+      all: initial;
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 2147483646;
+      display: none;
+      will-change: transform, width, height;
+      transform-origin: 0 0;
+      contain: strict;
+      transition: none !important;
     }
     
     /* Selection Box */
     .qs-box {
       all: initial;
       position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
       border-width: 2px;
       border-style: solid;
       border-radius: 6px;
       pointer-events: none;
       box-sizing: border-box;
+      transform-origin: 0 0;
+      z-index: 2147483647;
+      contain: strict;
+      will-change: transform;
+      transition: none !important;
     }
 
     /* Smart Element Highlighter - Dashed Black & White */
@@ -600,6 +626,13 @@ if (!window.SwiftSelect.styles) {
       transition: none !important;
     }
 
+    /* Curtains Blur for Glass Theme */
+    .qs-theme-glass .qs-curtain {
+      backdrop-filter: blur(1.6px) !important;
+      -webkit-backdrop-filter: blur(1.6px) !important;
+      background-color: rgba(0, 0, 0, 0.03) !important;
+    }
+
     /* -------------------------------------------
        VARIANT B: DARK GLASS (Specific Overrides)
        ------------------------------------------- */
@@ -629,8 +662,6 @@ if (!window.SwiftSelect.styles) {
     .qs-theme-glass.qs-box {
         border-radius: 6px !important;
         background-color: transparent !important;
-        backdrop-filter: blur(1.2px) !important;
-        -webkit-backdrop-filter: blur(1.2px) !important;
         
         /* THEME-MATCHED BORDER (#224 is the menu text color) */
         border: 2px solid #224 !important;
@@ -643,12 +674,15 @@ if (!window.SwiftSelect.styles) {
             inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     }
 
+    /* Performance optimization: Simplify shadows during active dragging */
+    .qs-selecting .qs-box {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    }
+
 
     /* DARK VARIANT SELECTION BOX (Theme-Matched White) */
     .qs-theme-glass-dark.qs-box {
         background-color: transparent !important;
-        backdrop-filter: blur(1.2px) !important;
-        -webkit-backdrop-filter: blur(1.2px) !important;
         
         /* THEME-MATCHED BORDER (#e1e1e1 is the menu text color) */
         border: 2px solid #e1e1e1 !important;
@@ -835,13 +869,15 @@ if (!window.SwiftSelect.styles) {
     
     .qs-hud {
       position: fixed;
+      top: 0;
+      left: 0;
       background: #ffffff;
       color: #1a1a1a;
       padding: 6px 16px;
       border-radius: 50px;
       font-size: 13px;
       font-family: 'Google Sans', system-ui, sans-serif;
-      font-weight: 700;
+      font-weight: 600;
       pointer-events: none;
       z-index: 2147483649;
       display: none;
@@ -849,7 +885,9 @@ if (!window.SwiftSelect.styles) {
       border: 1px solid rgba(0, 0, 0, 0.15);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       line-height: normal;
-      transform: none !important; 
+      transform: translate3d(0, 0, 0); 
+      will-change: transform;
+      transform-origin: 0 0;
     }
     .qs-theme-dark.qs-hud {
       background: #1a1a1a;
@@ -865,7 +903,7 @@ if (!window.SwiftSelect.styles) {
       
       border: none !important; /* Defined by Liquid Shadows */
       color: var(--c-content) !important;
-      font-weight: 700; /* Match Menu Buttons */
+      font-weight: 600; /* Match Menu Buttons */
       padding: 6px 16px;
       
       /* EXACT MENU BUTTON SHADOWS */

@@ -43,6 +43,8 @@ if (!window.SwiftSelect.events) {
       e.stopPropagation();
       e.stopImmediatePropagation();
 
+      window.SwiftSelect.ui.ensureUi();
+
       this.dragging = true;
       this.isMoving = false;
       this.startX = e.clientX;
@@ -54,15 +56,8 @@ if (!window.SwiftSelect.events) {
       this.rect.width = 0;
       this.rect.height = 0;
 
-      if (!window.SwiftSelect.ui.boxHost) {
-        const { host, el } = window.SwiftSelect.ui.makeShadowOverlay(
-          "div",
-          "qs-box",
-        );
-        window.SwiftSelect.ui.boxHost = host;
-        window.SwiftSelect.ui.box = el;
-      }
-      window.SwiftSelect.ui.updateBox(this.rect);
+      window.SwiftSelect.ui.updateSelection(this.rect);
+      window.SwiftSelect.ui.setSelecting(true);
     },
 
     onMouseMove: function (e) {
@@ -84,8 +79,7 @@ if (!window.SwiftSelect.events) {
         this.lastMouseX = x;
         this.lastMouseY = y;
 
-        window.SwiftSelect.ui.updateBox(this.rect);
-        window.SwiftSelect.ui.updateHud(this.rect, x, y);
+        window.SwiftSelect.ui.updateSelection(this.rect);
         return;
       } else {
         this.isMoving = false;
@@ -250,8 +244,7 @@ if (!window.SwiftSelect.events) {
 
       this.rect.width = width;
       this.rect.height = height;
-      window.SwiftSelect.ui.updateBox(this.rect);
-      window.SwiftSelect.ui.updateHud(this.rect, x, y);
+      window.SwiftSelect.ui.updateSelection(this.rect);
     },
 
     onMouseUp: function (e) {
@@ -263,7 +256,8 @@ if (!window.SwiftSelect.events) {
       e.stopImmediatePropagation();
 
       this.dragging = false;
-      window.SwiftSelect.ui.updateBox(this.rect);
+      window.SwiftSelect.ui.updateSelection(this.rect);
+      window.SwiftSelect.ui.setSelecting(false);
 
       if (this.rect.width < 5 || this.rect.height < 5) {
         if (this.highlightedRect) {
@@ -380,6 +374,7 @@ if (!window.SwiftSelect.events) {
     cleanup: function () {
       this.dragging = false;
       this.isMoving = false;
+      window.SwiftSelect.ui.setSelecting(false);
       this.removeListeners();
     },
   };

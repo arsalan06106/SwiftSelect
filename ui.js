@@ -3,18 +3,17 @@ if (!window.SwiftSelect) window.SwiftSelect = {};
 if (!window.SwiftSelect.ui) {
   window.SwiftSelect.ui = {
     overlayHost: null,
-    boxHost: null,
     statusHost: null,
     guideHost: null,
     highlighterHost: null,
-    hudHost: null,
     overlay: null,
     box: null,
     statusEl: null,
     guideEl: null,
-    guideShadow: null,
     highlighterEl: null,
     hudEl: null,
+    curtains: [],
+    overlayShadow: null,
 
     // Track timers
     hideStatusTimer: null,
@@ -22,6 +21,12 @@ if (!window.SwiftSelect.ui) {
 
     // Shared CSS Sheet
     qsSheet: null,
+
+    // Animation frames
+    updateFrameId: null,
+    isUpdating: false,
+    lastHudText: "",
+    pendingRect: null,
 
     makeShadowOverlay: function (tag, className, innerHTML = "") {
       // Ensure SVG Filter is injected ONCE into the main document
@@ -81,10 +86,31 @@ if (!window.SwiftSelect.ui) {
       this.setCrosshairCursor();
 
       if (!this.overlayHost) {
-        const { host, el } = this.makeShadowOverlay("div", "qs-ovl");
+        const { host, el, shadow } = this.makeShadowOverlay("div", "qs-ovl");
         this.overlayHost = host;
         this.overlay = el;
+        this.overlayShadow = shadow;
         this.overlayHost.style.pointerEvents = "auto";
+
+        // Create 4 Curtains for Blur inside the SAME shadow DOM
+        this.curtains = [];
+        for (let i = 0; i < 4; i++) {
+          const c = document.createElement("div");
+          c.className = "qs-curtain";
+          this.overlay.appendChild(c);
+          this.curtains.push(c);
+        }
+
+        // Create Selection Box inside the SAME shadow DOM
+        this.box = document.createElement("div");
+        this.box.className = "qs-box";
+        this.overlay.appendChild(this.box);
+
+        // Create HUD inside the SAME shadow DOM
+        this.hudEl = document.createElement("div");
+        this.hudEl.className = "qs-hud";
+        this.hudEl.style.borderBottomRightRadius = "6px";
+        this.overlay.appendChild(this.hudEl);
       }
       if (!this.statusHost) {
         const { host, el } = this.makeShadowOverlay("div", "qs-status");
@@ -97,19 +123,6 @@ if (!window.SwiftSelect.ui) {
         const { host, el } = this.makeShadowOverlay("div", "qs-highlighter");
         this.highlighterHost = host;
         this.highlighterEl = el;
-      }
-
-      if (!this.boxHost) {
-        const { host, el } = this.makeShadowOverlay("div", "qs-box");
-        this.boxHost = host;
-        this.box = el;
-      }
-
-      if (!this.hudHost) {
-        const { host, el } = this.makeShadowOverlay("div", "qs-hud");
-        this.hudHost = host;
-        this.hudEl = el;
-        this.hudEl.style.borderBottomRightRadius = "6px";
       }
 
       // Apply Theme to HUD immediately
@@ -204,6 +217,18 @@ if (!window.SwiftSelect.ui) {
 
         // Force Reflow
         void this.guideEl.offsetWidth;
+      }
+    },
+
+    setSelecting: function (isSelecting) {
+      if (!this.overlay) return;
+      if (isSelecting) {
+        this.overlay.classList.add("qs-selecting");
+      } else {
+        this.overlay.classList.remove("qs-selecting");
+        this.curtains.forEach((c) => (c.style.display = "none"));
+        if (this.box) this.box.style.display = "none";
+        if (this.hudEl) this.hudEl.style.display = "none";
       }
     },
 
@@ -318,41 +343,98 @@ if (!window.SwiftSelect.ui) {
       }
     },
 
-    updateHud: function (rect, x, y) {
-      if (!this.hudEl || !this.hudHost) return;
+    updateSelection: function (rect) {
+      if (!this.overlay || !this.box || !this.hudEl) return;
 
-      const gap = 8;
-      const hudHeight = 26;
-      let top = rect.top + gap;
-      let left = rect.left + gap;
+      this.pendingRect = rect;
 
-      if (rect.width < 100 || rect.height < 40) {
-        top = rect.top - hudHeight - gap;
-      }
+      if (this.isUpdating) return;
+      this.isUpdating = true;
 
-      this.hudEl.style.top = top + "px";
-      this.hudEl.style.left = left + "px";
-      this.hudEl.style.transform = "";
+      this.updateFrameId = requestAnimationFrame(() => {
+        this.isUpdating = false;
 
-      const w = Math.round(rect.width);
-      const h = Math.round(rect.height);
-      this.hudEl.textContent = `${w} x ${h}`;
-      this.hudEl.style.display = "block";
-      this.hudHost.style.display = "block";
+        // Always render the ABSOLUTE LATEST coordinates
+        const r = this.pendingRect;
+        // Guard: Check if UI was cleaned up while frame was pending
+        if (!r || !this.box || !this.hudEl) return;
+
+        const x1 = r.left;
+        const y1 = r.top;
+        const x2 = r.left + r.width;
+        const y2 = r.top + r.height;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        // 1. Box Position (Atomic updates are faster than cssText)
+        this.box.style.display = "block";
+        this.box.style.width = r.width + "px";
+        this.box.style.height = r.height + "px";
+        this.box.style.transform = `translate3d(${x1}px, ${y1}px, 0)`;
+
+        // 2. HUD Position (Atomic)
+        const gap = 8;
+        const hudHeight = 26;
+        let hudTop = y1 + gap;
+        let hudLeft = x1 + gap;
+        if (r.width < 100 || r.height < 40) {
+          hudTop = y1 - hudHeight - gap;
+        }
+
+        const w = Math.round(r.width);
+        const h = Math.round(r.height);
+        const hudText = `${w} x ${h}`;
+        if (this.lastHudText !== hudText) {
+          this.hudEl.textContent = hudText;
+          this.lastHudText = hudText;
+        }
+        this.hudEl.style.display = "block";
+        this.hudEl.style.transform = `translate3d(${hudLeft}px, ${hudTop}px, 0)`;
+
+        // 3. Curtains (High-Performance Layer Sync)
+        if (this.curtains && this.curtains.length === 4) {
+          const [top, bottom, left, right] = this.curtains;
+
+          const rw = Math.ceil(vw);
+          const rh = Math.ceil(vh);
+          const rx1 = Math.round(x1);
+          const ry1 = Math.round(y1);
+          const rx2 = Math.round(x2);
+          const ry2 = Math.round(y2);
+          const rboxH = Math.round(r.height);
+
+          // Top
+          top.style.display = "block";
+          top.style.width = rw + "px";
+          top.style.height = ry1 + "px";
+          top.style.transform = "translate3d(0, 0, 0)";
+
+          // Bottom
+          bottom.style.display = "block";
+          bottom.style.width = rw + "px";
+          bottom.style.height = rh - ry2 + "px";
+          bottom.style.transform = `translate3d(0, ${ry2}px, 0)`;
+
+          // Left
+          left.style.display = "block";
+          left.style.width = rx1 + "px";
+          left.style.height = rboxH + "px";
+          left.style.transform = `translate3d(0, ${ry1}px, 0)`;
+
+          // Right
+          right.style.display = "block";
+          right.style.width = rw - rx2 + "px";
+          right.style.height = rboxH + "px";
+          right.style.transform = `translate3d(${rx2}px, ${ry1}px, 0)`;
+        }
+      });
     },
 
-    updateBox: function (rect) {
-      if (!this.boxHost) {
-        const { host, el } = this.makeShadowOverlay("div", "qs-box");
-        this.boxHost = host;
-        this.box = el;
-      }
-      if (!this.box) return;
-      this.box.style.left = rect.left + "px";
-      this.box.style.top = rect.top + "px";
-      this.box.style.width = rect.width + "px";
-      this.box.style.height = rect.height + "px";
-      this.box.style.display = "block";
+    updateHud: function () {
+      /* Legacy - Redirected */
+    },
+    updateBox: function () {
+      /* Legacy - Redirected */
     },
 
     triggerFlash: function (targetRect = null) {
@@ -396,9 +478,8 @@ if (!window.SwiftSelect.ui) {
     hideUiForCapture: async function () {
       if (this.guideHost) this.guideHost.style.display = "none";
       if (this.statusHost) this.statusHost.style.display = "none";
-      if (this.boxHost) this.boxHost.style.display = "none";
+      if (this.overlayHost) this.overlayHost.style.display = "none";
       if (this.highlighterHost) this.highlighterHost.style.display = "none";
-      if (this.hudHost) this.hudHost.style.display = "none";
       await new Promise((r) => requestAnimationFrame(r));
       await new Promise((r) => setTimeout(r, 100));
     },
@@ -407,25 +488,25 @@ if (!window.SwiftSelect.ui) {
     cleanup: function () {
       this.removeCrosshairCursor();
 
-      if (this.boxHost && this.boxHost.parentNode)
-        this.boxHost.parentNode.removeChild(this.boxHost);
-      this.boxHost = null;
-      this.box = null;
+      // Cancel any pending animation frame
+      if (this.updateFrameId) {
+        cancelAnimationFrame(this.updateFrameId);
+        this.updateFrameId = null;
+      }
+      this.isUpdating = false;
+      this.pendingRect = null;
 
       if (this.overlayHost && this.overlayHost.parentNode)
         this.overlayHost.parentNode.removeChild(this.overlayHost);
       this.overlayHost = null;
       this.overlay = null;
+      this.box = null;
+      this.hudEl = null;
 
       if (this.highlighterHost && this.highlighterHost.parentNode)
         this.highlighterHost.parentNode.removeChild(this.highlighterHost);
       this.highlighterHost = null;
       this.highlighterEl = null;
-
-      if (this.hudHost && this.hudHost.parentNode)
-        this.hudHost.parentNode.removeChild(this.hudHost);
-      this.hudHost = null;
-      this.hudEl = null;
 
       if (this.guideEl && this.guideHost) {
         this.guideEl.classList.add("qs-hiding");
@@ -442,6 +523,14 @@ if (!window.SwiftSelect.ui) {
         this.guideHost = null;
         this.guideEl = null;
       }
+      if (this.overlay) {
+        this.overlay.classList.remove("qs-selecting");
+        this.overlay.style.clipPath = "";
+      }
+      this.curtains.forEach((c) => {
+        if (c && c.parentNode) c.parentNode.removeChild(c);
+      });
+      this.curtains = [];
     },
 
     updateBadge: function (text, color = "#ff6a61") {

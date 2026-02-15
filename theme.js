@@ -81,11 +81,12 @@ if (!window.SwiftSelect.theme) {
       const hudEl = window.SwiftSelect.ui?.hudEl;
       const statusEl = window.SwiftSelect.ui?.statusEl;
       const boxEl = window.SwiftSelect.ui?.box;
+      const overlayEl = window.SwiftSelect.ui?.overlay;
 
       // if (!guideEl) return; // Allow updating status/hud even if guide is missing
 
       // Reset classes first
-      const elements = [guideEl, statusEl, hudEl, boxEl];
+      const elements = [guideEl, statusEl, hudEl, boxEl, overlayEl];
       elements.forEach((el) => {
         if (el) {
           el.classList.remove(
