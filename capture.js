@@ -11,6 +11,8 @@ if (!window.SwiftSelect.capture) {
     _hiddenStickyElements: [],
     _innerScrollContainer: null,
     _innerScrollOriginalStyles: null,
+    _abortCapture: false,
+    _cursorStyleTag: null,
 
     loadImage: function (src) {
       return new Promise((resolve, reject) => {
@@ -34,6 +36,27 @@ if (!window.SwiftSelect.capture) {
       return title
         ? `${title} - ${type} - ${timestamp}.${ext}`
         : `${type} - ${timestamp}.${ext}`;
+    },
+
+    toggleCursor: function (hide) {
+      if (hide) {
+        if (!this._cursorStyleTag) {
+          this._cursorStyleTag = document.createElement("style");
+          this._cursorStyleTag.id = "qs-cursor-hide";
+          this._cursorStyleTag.textContent = `
+            * { cursor: none !important; }
+            .qs-ovl, .qs-guide, .qs-status-host { cursor: none !important; }
+          `;
+          (document.head || document.documentElement).appendChild(
+            this._cursorStyleTag,
+          );
+        }
+      } else {
+        if (this._cursorStyleTag) {
+          this._cursorStyleTag.remove();
+          this._cursorStyleTag = null;
+        }
+      }
     },
 
     handleSaveAction: function () {
@@ -161,6 +184,7 @@ if (!window.SwiftSelect.capture) {
         console.error("handleCaptureVisible error:", err);
         window.SwiftSelect.ui.setStatus("Capture failed", 3000, "error");
       } finally {
+        this.toggleCursor(false); // Added
         window.SwiftSelect.ui.setButtonLoading("capture-visible", false);
       }
     },
@@ -171,6 +195,10 @@ if (!window.SwiftSelect.capture) {
         await window.SwiftSelect.ui.hideUiForCapture();
         window.SwiftSelect.ui.cleanup();
         window.SwiftSelect.events.removeListeners();
+
+        this.toggleCursor(true); // Added
+        // Give a tiny moment for the cursor to actually vanish from the OS/Browser render
+        await new Promise((r) => setTimeout(r, 50)); // Added
 
         const resp = await new Promise((resolve) => {
           chrome.runtime.sendMessage({ type: "capture-visible-tab" }, resolve);
@@ -210,6 +238,7 @@ if (!window.SwiftSelect.capture) {
         console.error("handleCaptureAndDownload error:", err);
         window.SwiftSelect.ui.setStatus("Capture failed", 3000, "error");
       } finally {
+        this.toggleCursor(false); // Added
         window.SwiftSelect.ui.setButtonLoading("capture-download", false);
       }
     },
@@ -217,6 +246,10 @@ if (!window.SwiftSelect.capture) {
     captureAndCrop: async function (viewRect) {
       try {
         await window.SwiftSelect.ui.hideUiForCapture();
+
+        this.toggleCursor(true); // Added
+        // Give a tiny moment for the cursor to actually vanish from the OS/Browser render
+        await new Promise((r) => setTimeout(r, 50)); // Added
 
         const resp = await new Promise((resolve) => {
           chrome.runtime.sendMessage({ type: "capture-visible-tab" }, resolve);
@@ -253,6 +286,8 @@ if (!window.SwiftSelect.capture) {
         console.error("captureAndCrop error:", err);
         window.SwiftSelect.ui.setStatus("Capture failed", 3000, "error");
         throw err;
+      } finally {
+        this.toggleCursor(false); // Added
       }
     },
 
@@ -277,6 +312,12 @@ if (!window.SwiftSelect.capture) {
         const pos = style.position;
 
         if (pos === "fixed" || pos === "sticky") {
+          const rect = el.getBoundingClientRect();
+          const scrollY = window.scrollY || document.documentElement.scrollTop;
+          const scrollX = window.scrollX || document.documentElement.scrollLeft;
+          const docTop = rect.top + scrollY;
+          const docLeft = rect.left + scrollX;
+
           this._hiddenStickyElements.push({
             element: el,
             originalPosition: el.style.position,
@@ -288,16 +329,36 @@ if (!window.SwiftSelect.capture) {
             originalHeight: el.style.height,
             originalZIndex: el.style.zIndex,
             originalVisibility: el.style.visibility,
+            originalMargin: el.style.margin,
             computedPosition: pos,
           });
 
-          if (pos === "fixed") {
-            // Hide fixed elements entirely — they'd appear in every frame
-            el.style.setProperty("visibility", "hidden", "important");
-          } else {
-            // Sticky → relative: stop it from re-sticking during unroll
-            el.style.setProperty("position", "relative", "important");
-          }
+          // Convert to absolute
+          el.style.setProperty("position", "absolute", "important");
+          el.style.setProperty("margin", "0", "important");
+          el.style.setProperty("right", "auto", "important");
+          el.style.setProperty("bottom", "auto", "important");
+          el.style.setProperty("width", `${rect.width}px`, "important");
+          el.style.setProperty("height", `${rect.height}px`, "important");
+
+          // Calculate relative top/left based on new offsetParent
+          // We need a force reflow to get the new offsetParent after position change
+          void el.offsetHeight;
+          let offParent = el.offsetParent || document.body;
+          let parentRect = offParent.getBoundingClientRect();
+          let parentDocTop = parentRect.top + scrollY;
+          let parentDocLeft = parentRect.left + scrollX;
+
+          el.style.setProperty(
+            "top",
+            `${docTop - parentDocTop}px`,
+            "important",
+          );
+          el.style.setProperty(
+            "left",
+            `${docLeft - parentDocLeft}px`,
+            "important",
+          );
         }
       }
 
@@ -319,6 +380,7 @@ if (!window.SwiftSelect.capture) {
         el.style.height = entry.originalHeight;
         el.style.zIndex = entry.originalZIndex;
         el.style.visibility = entry.originalVisibility;
+        el.style.margin = entry.originalMargin || "";
       }
       this._hiddenStickyElements = [];
     },
@@ -419,11 +481,14 @@ if (!window.SwiftSelect.capture) {
       }
 
       this._unrollStyle.textContent = `
+      html, body {
+        cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=), auto !important;
+      }
       * {
         transition: none !important;
         animation-play-state: paused !important;
         box-shadow: none !important;
-        cursor: none !important;
+        cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=), auto !important;
         pointer-events: none !important;
       }
       html {
@@ -489,6 +554,7 @@ if (!window.SwiftSelect.capture) {
     },
 
     handleUnrollPage: function () {
+      this.toggleCursor(true); // Added
       document.activeElement?.blur();
       const hovered = document.querySelectorAll(":hover");
       hovered.forEach((el) => {
@@ -528,10 +594,12 @@ if (!window.SwiftSelect.capture) {
         rect: { height: rect.height, bottom: rect.bottom },
         rectBottom: rect.bottom,
         bgColor,
+        abort: this._abortCapture,
       };
     },
 
     handleUpdateUnroll: function (scrollTop) {
+      if (this._abortCapture) return { abort: true };
       this.setUnrollPosition(scrollTop);
       const rect = document.documentElement.getBoundingClientRect();
       return {
@@ -541,17 +609,28 @@ if (!window.SwiftSelect.capture) {
     },
 
     handleRestoreUnroll: function () {
-      this.removeUnrollCSS();
+      this.toggleCursor(false); // Added
+      this.removeUnrollCSS(); // Corrected from `moveUnrollCSS()`
     },
 
     handleCaptureFullPage: async function () {
       let originalIcon = null;
       let scrollbarStyle = null;
+      this._abortCapture = false;
+
+      const onAbortKey = (e) => {
+        if (e.key === "Escape") {
+          this._abortCapture = true;
+          window.SwiftSelect.ui.setStatus("Aborting...", 1500);
+        }
+      };
+
       const btn = window.SwiftSelect.ui.guideShadow?.querySelector(
         '[data-action="capture-full"]',
       );
 
       try {
+        window.addEventListener("keydown", onAbortKey, true);
         window.SwiftSelect.ui.ensureUi();
         window.SwiftSelect.ui.removeCrosshairCursor();
         window.SwiftSelect.events.removeListeners();
@@ -559,9 +638,12 @@ if (!window.SwiftSelect.capture) {
 
         window.SwiftSelect.ui.updateBadge("0%");
 
-        originalIcon = btn?.innerHTML;
+        originalIcon = btn?.cloneNode(true);
         if (btn) {
           btn.classList.add("qs-loading");
+          // Clear children instead of innerHTML
+          while (btn.firstChild) btn.removeChild(btn.firstChild);
+
           const ps = document.createElement("span");
           ps.className = "qs-progress-text";
           ps.textContent = "0%";
@@ -571,8 +653,14 @@ if (!window.SwiftSelect.capture) {
         if (window.SwiftSelect.ui.guideHost)
           window.SwiftSelect.ui.guideHost.style.display = "none";
 
-        document.documentElement.style.cursor = "none !important";
-        document.body.style.cursor = "none !important";
+        const tCursor =
+          "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=), auto";
+        document.documentElement.style.setProperty(
+          "cursor",
+          tCursor,
+          "important",
+        );
+        document.body.style.setProperty("cursor", tCursor, "important");
 
         await new Promise((r) => requestAnimationFrame(r));
 
@@ -603,6 +691,9 @@ if (!window.SwiftSelect.capture) {
           );
         });
 
+        if (this._abortCapture || result?.abort)
+          throw new Error("Capture Aborted");
+
         if (!result || !result.success) {
           throw new Error(result?.error || "Full page capture failed");
         }
@@ -615,11 +706,24 @@ if (!window.SwiftSelect.capture) {
           btn.classList.remove("qs-loading");
           btn.querySelector(".qs-progress-text")?.remove();
           btn.classList.add("qs-success");
-          btn.innerHTML =
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg><span>Full Page</span>';
+
+          const tick = window.SwiftSelect.ui.createSvg("0 -960 960 960", {
+            d: "M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z",
+          });
+          const span = document.createElement("span");
+          span.textContent = "Full Page";
+          while (btn.firstChild) btn.removeChild(btn.firstChild);
+          btn.appendChild(tick);
+          btn.appendChild(span);
+
           setTimeout(() => {
             btn.classList.remove("qs-success");
-            if (originalIcon) btn.innerHTML = originalIcon;
+            if (originalIcon) {
+              while (btn.firstChild) btn.removeChild(btn.firstChild);
+              originalIcon.childNodes.forEach((n) =>
+                btn.appendChild(n.cloneNode(true)),
+              );
+            }
           }, 2000);
         }
 
@@ -633,45 +737,10 @@ if (!window.SwiftSelect.capture) {
         URL.revokeObjectURL(url);
 
         const clipSuccess = result.clipboardSuccess;
-
         window.SwiftSelect.ui.updateBadge("✓", "#198754");
-        if (clipSuccess) {
-          window.SwiftSelect.ui.setStatus(
-            "Page Saved & Copied Successfully",
-            5000,
-            "saved",
-          );
-        } else {
-          // Automated copy restricted by browser; provide high-quality manual action
-          window.SwiftSelect.ui.setStatus(
-            "Page Saved! Click to Copy Image",
-            8000,
-            "saved",
-            {
-              label: "Copy Image",
-              onclick: async () => {
-                try {
-                  const item = new ClipboardItem({
-                    "image/png": this.lastBlob,
-                  });
-                  await navigator.clipboard.write([item]);
-                  window.SwiftSelect.ui.setStatus(
-                    "Copied to Clipboard!",
-                    2000,
-                    "saved",
-                  );
-                } catch (err) {
-                  // This is rare after a fresh click
-                  window.SwiftSelect.ui.setStatus(
-                    "Copy Failed. Please try again.",
-                    3000,
-                    "error",
-                  );
-                }
-              },
-            },
-          );
-        }
+
+        const statusMsg = clipSuccess ? "Page Saved & Copied" : "Page Saved";
+        window.SwiftSelect.ui.setStatus(statusMsg, 3000, "saved");
         setTimeout(() => window.SwiftSelect.ui.updateBadge(""), 3000);
 
         document.documentElement.style.cursor = "";
@@ -679,6 +748,7 @@ if (!window.SwiftSelect.capture) {
 
         window.SwiftSelect.ui.cleanup();
         window.SwiftSelect.events.removeListeners();
+        window.removeEventListener("keydown", onAbortKey, true);
       } catch (err) {
         if (err.message?.includes("Extension context invalidated")) {
           window.SwiftSelect.ui.setStatus(
@@ -697,7 +767,12 @@ if (!window.SwiftSelect.capture) {
           btn.classList.remove("qs-loading");
           btn.classList.remove("qs-success");
           btn.querySelector(".qs-progress-text")?.remove();
-          if (originalIcon) btn.innerHTML = originalIcon;
+          if (originalIcon) {
+            while (btn.firstChild) btn.removeChild(btn.firstChild);
+            originalIcon.childNodes.forEach((n) =>
+              btn.appendChild(n.cloneNode(true)),
+            );
+          }
         }
 
         document.documentElement.style.cursor = "";
@@ -706,6 +781,7 @@ if (!window.SwiftSelect.capture) {
         window.SwiftSelect.ui.setStatus("Capture Failed", 3000, "error");
         if (window.SwiftSelect.ui.guideHost)
           window.SwiftSelect.ui.guideHost.style.display = "flex";
+        window.removeEventListener("keydown", onAbortKey, true);
       }
     },
   };

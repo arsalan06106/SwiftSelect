@@ -46,5 +46,11 @@
       },
       "description": "Capture full page & download"
     }
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["styles.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

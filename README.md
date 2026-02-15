@@ -109,7 +109,6 @@ git clone https://github.com/arsalan06106/SwiftSelect-capture-copy-download-scre
 SwiftSelect/
 ├── manifest.json        # Extension config (MV3)
 ├── background.js        # Service worker entry
-├── bg.js                # Core background logic
 ├── contentScript.js     # Page injection
 ├── capture.js           # Screenshot capture engine
 ├── events.js            # Input & event handling

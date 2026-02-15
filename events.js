@@ -11,6 +11,7 @@ if (!window.SwiftSelect.events) {
     lastMouseY: 0,
     rect: { left: 0, top: 0, width: 0, height: 0 },
     snapTimer: null,
+    lastSnapTime: 0, // For throttling
     highlightedRect: null,
     initialized: false,
 
@@ -18,16 +19,15 @@ if (!window.SwiftSelect.events) {
       if (this.initialized) return;
       this.initialized = true;
       // Bound versions for listeners
-      this.onMouseDown = this.onMouseDown.bind(this);
-      this.onMouseMove = this.onMouseMove.bind(this);
-      this.onMouseUp = this.onMouseUp.bind(this);
+      this.onPointerDown = this.onPointerDown.bind(this);
+      this.onPointerMove = this.onPointerMove.bind(this);
+      this.onPointerUp = this.onPointerUp.bind(this);
       this.onKeyDown = this.onKeyDown.bind(this);
       this.onKeyUp = this.onKeyUp.bind(this);
-      this.stopProp = this.stopProp.bind(this);
       this.preventAll = this.preventAll.bind(this);
     },
 
-    onMouseDown: function (e) {
+    onPointerDown: function (e) {
       if (e.button !== 0) return;
 
       const path = e.composedPath();
@@ -60,7 +60,7 @@ if (!window.SwiftSelect.events) {
       window.SwiftSelect.ui.setSelecting(true);
     },
 
-    onMouseMove: function (e) {
+    onPointerMove: function (e) {
       const x = e.clientX;
       const y = e.clientY;
 
@@ -102,8 +102,26 @@ if (!window.SwiftSelect.events) {
           return;
         }
 
-        this.snapTimer = setTimeout(() => {
-          const elements = document.elementsFromPoint(x, y);
+        // Optimized Snapping Logic (Throttled execution)
+        const now = Date.now();
+        if (now - this.lastSnapTime < 100) return; // Limit to 10 FPS for layout checks
+        this.lastSnapTime = now;
+
+        // Clear any pending debounced snap
+        if (this.snapTimer) {
+          clearTimeout(this.snapTimer);
+          this.snapTimer = null;
+        }
+
+        // Run snapping check
+        const runSnap = () => {
+          let elements = [];
+          try {
+            elements = document.elementsFromPoint(x, y);
+          } catch (e) {
+            console.warn("SwiftSelect: elementsFromPoint failed", e);
+            return;
+          }
           let bestCandidate = null;
 
           const isSignificant = (el) => {
@@ -204,7 +222,7 @@ if (!window.SwiftSelect.events) {
             window.SwiftSelect.ui.highlighterEl.style.width = r.width + "px";
             window.SwiftSelect.ui.highlighterEl.style.height = r.height + "px";
             this.highlightedRect = r;
-            window.SwiftSelect.ui.updateHud(r, x, y);
+            window.SwiftSelect.ui.updateSelection(r);
           } else {
             if (window.SwiftSelect.ui.highlighterEl)
               window.SwiftSelect.ui.highlighterEl.style.display = "none";
@@ -212,7 +230,12 @@ if (!window.SwiftSelect.events) {
             if (window.SwiftSelect.ui.hudEl)
               window.SwiftSelect.ui.hudEl.style.display = "none";
           }
-        }, 150);
+        };
+
+        runSnap();
+
+        // Final "catch" snap after mouse stops moving
+        this.snapTimer = setTimeout(runSnap, 200);
 
         return;
       }
@@ -247,7 +270,7 @@ if (!window.SwiftSelect.events) {
       window.SwiftSelect.ui.updateSelection(this.rect);
     },
 
-    onMouseUp: function (e) {
+    onPointerUp: function (e) {
       if (e.button !== 0) return;
       if (!this.dragging) return;
 
@@ -310,19 +333,7 @@ if (!window.SwiftSelect.events) {
     },
 
     stopProp: function (e) {
-      const path = e.composedPath();
-      if (
-        window.SwiftSelect.ui.guideHost &&
-        path.includes(window.SwiftSelect.ui.guideHost)
-      )
-        return;
-      if (
-        window.SwiftSelect.ui.statusHost &&
-        path.includes(window.SwiftSelect.ui.statusHost)
-      )
-        return;
-      e.stopPropagation();
-      e.stopImmediatePropagation();
+      /* Deprecated: Merged into pointer listeners */
     },
 
     preventAll: function (e) {
@@ -343,29 +354,25 @@ if (!window.SwiftSelect.events) {
     },
 
     addListeners: function () {
-      this.init(); // Ensure methods are bound (idempotent if handled correctly)
-      document.addEventListener("mousedown", this.onMouseDown, true);
-      document.addEventListener("mousemove", this.onMouseMove, true);
-      document.addEventListener("mouseup", this.onMouseUp, true);
+      this.init();
+      document.addEventListener("pointerdown", this.onPointerDown, true);
+      document.addEventListener("pointermove", this.onPointerMove, true);
+      document.addEventListener("pointerup", this.onPointerUp, true);
       document.addEventListener("keydown", this.onKeyDown, true);
       document.addEventListener("keyup", this.onKeyUp, true);
 
-      document.addEventListener("pointerdown", this.stopProp, true);
-      document.addEventListener("pointerup", this.stopProp, true);
       document.addEventListener("click", this.preventAll, true);
       document.addEventListener("dblclick", this.preventAll, true);
       document.addEventListener("contextmenu", this.preventAll, true);
     },
 
     removeListeners: function () {
-      document.removeEventListener("mousedown", this.onMouseDown, true);
-      document.removeEventListener("mousemove", this.onMouseMove, true);
-      document.removeEventListener("mouseup", this.onMouseUp, true);
+      document.removeEventListener("pointerdown", this.onPointerDown, true);
+      document.removeEventListener("pointermove", this.onPointerMove, true);
+      document.removeEventListener("pointerup", this.onPointerUp, true);
       document.removeEventListener("keydown", this.onKeyDown, true);
       document.removeEventListener("keyup", this.onKeyUp, true);
 
-      document.removeEventListener("pointerdown", this.stopProp, true);
-      document.removeEventListener("pointerup", this.stopProp, true);
       document.removeEventListener("click", this.preventAll, true);
       document.removeEventListener("dblclick", this.preventAll, true);
       document.removeEventListener("contextmenu", this.preventAll, true);

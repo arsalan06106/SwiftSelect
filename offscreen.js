@@ -122,6 +122,7 @@ async function getTabStream(streamId, width, height) {
         maxWidth: width,
         minHeight: height,
         maxHeight: height,
+        chromeMediaSourceCursor: "never",
       },
       cursor: "never",
     },
@@ -221,7 +222,7 @@ async function captureFullPage(
         scrollTop: logicalY,
       });
 
-      if (!updateResult) {
+      if (!updateResult || updateResult.abort) {
         isDone = true;
         break;
       }

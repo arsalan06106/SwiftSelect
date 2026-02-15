@@ -18,11 +18,15 @@ if (!window.SwiftSelect.theme) {
                 glassThemeMigrated: true,
               });
             } else if (data.userTheme) {
-              // Normal behavior after migration: Respect user choice
-              this.currentUserTheme = data.userTheme;
+              // Map old light/dark themes to adaptive standard
+              if (data.userTheme === "light" || data.userTheme === "dark") {
+                this.currentUserTheme = "standard";
+              } else {
+                this.currentUserTheme = data.userTheme;
+              }
               this.applyTheme(this.currentUserTheme);
             } else {
-              // Fallback for new users (post-migration logic)
+              // Fallback for new users
               this.applyTheme(this.currentUserTheme);
             }
           },
@@ -34,18 +38,14 @@ if (!window.SwiftSelect.theme) {
         window
           .matchMedia("(prefers-color-scheme: dark)")
           .addEventListener("change", () => {
-            if (this.currentUserTheme === "glass") {
-              this.applyTheme("glass");
-            }
+            this.applyTheme(this.currentUserTheme);
           });
       }
 
       // Observer for Site Theme Changes (Class/Style updates)
       const observer = new MutationObserver(() => {
-        if (this.currentUserTheme === "glass") {
-          // Debounce/Throttle could be added here if needed, but applyTheme is relatively cheap
-          this.applyTheme("glass");
-        }
+        // Apply theme whenever page changes might affect detected theme
+        this.applyTheme(this.currentUserTheme);
       });
 
       const config = {
@@ -65,12 +65,11 @@ if (!window.SwiftSelect.theme) {
     },
 
     handleThemeToggle: function () {
-      if (this.currentUserTheme === "light") {
-        this.currentUserTheme = "dark";
-      } else if (this.currentUserTheme === "dark") {
-        this.currentUserTheme = "glass";
+      // Toggle only between Standard Adaptive and Glass Adaptive
+      if (this.currentUserTheme === "glass") {
+        this.currentUserTheme = "standard";
       } else {
-        this.currentUserTheme = "light";
+        this.currentUserTheme = "glass";
       }
       this.applyTheme(this.currentUserTheme);
       chrome.storage.local.set({ userTheme: this.currentUserTheme });
@@ -83,8 +82,6 @@ if (!window.SwiftSelect.theme) {
       const boxEl = window.SwiftSelect.ui?.box;
       const overlayEl = window.SwiftSelect.ui?.overlay;
 
-      // if (!guideEl) return; // Allow updating status/hud even if guide is missing
-
       // Reset classes first
       const elements = [guideEl, statusEl, hudEl, boxEl, overlayEl];
       elements.forEach((el) => {
@@ -93,38 +90,34 @@ if (!window.SwiftSelect.theme) {
             "qs-theme-dark",
             "qs-theme-glass",
             "qs-theme-glass-dark",
-            "qs-glass-contrast",
           );
         }
       });
 
-      if (theme === "dark") {
-        elements.forEach((el) => {
-          if (el) el.classList.add("qs-theme-dark");
-        });
-      } else if (theme === "glass") {
-        // Adaptive Glass: Check Site Theme
-        const isDarkSite = this.isPageDark();
+      const isDarkSite = this.isPageDark();
 
+      if (theme === "standard") {
         if (isDarkSite) {
-          // Glass Dark
+          elements.forEach((el) => {
+            if (el) el.classList.add("qs-theme-dark");
+          });
+        }
+        // light is default, no classes needed
+      } else if (theme === "glass") {
+        if (isDarkSite) {
           elements.forEach((el) => {
             if (el) el.classList.add("qs-theme-glass", "qs-theme-glass-dark");
           });
         } else {
-          // Glass Light
           elements.forEach((el) => {
             if (el) el.classList.add("qs-theme-glass");
           });
         }
       }
-      // 'light' is default (no classes added)
     },
 
     shouldUseDarkMode: function () {
-      if (this.currentUserTheme === "dark") return true;
-      if (this.currentUserTheme === "glass" && this.isPageDark()) return true;
-      return false;
+      return this.isPageDark();
     },
 
     isPageDark: function () {
