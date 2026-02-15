@@ -2,21 +2,19 @@
 
 <br>
 
-<img src="icons/icon128.png" alt="SwiftSelect" width="96">
-
-<br><br>
+<img src="icons/icon48.png" alt="SwiftSelect" width="76">
 
 # SwiftSelect
 
 **Capture · Copy · Download — in one motion.**
 
-The fastest screenshot tool for Chrome. Select a region, grab the viewport, or scroll-capture an entire page.
-<br>Everything lands on your clipboard automatically.
 
 <br>
 
 [![Chrome](https://raw.githubusercontent.com/creosB/creosB/refs/heads/main/assets/Chrome%20Web%20Store.svg)](https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec)
 
+The fastest screenshot tool for Chrome. Select a region, grab the viewport, or scroll-capture an entire page.
+<br>Everything lands on your clipboard automatically.
 </div>
 
 <br>
@@ -74,13 +72,13 @@ The floating toolbar includes a light/dark toggle. Your preference persists acro
 
 ## Install
 
-### ◈ Chrome Web Store (recommended)
+### ◆ Chrome Web Store (recommended)
 
 <a href="https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec">
   <img src="https://img.shields.io/badge/Install_SwiftSelect-Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Install from Chrome Web Store">
 </a>
 
-### ◈ From Source
+### ◆ From Source
 
 ```bash
 git clone https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git
