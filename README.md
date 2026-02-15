@@ -50,6 +50,8 @@ Every action has a shortcut. No toolbar hunting required.
 | <kbd>Alt</kbd> + <kbd>F</kbd> | Capture full page & download                      |
 | <kbd>Esc</kbd>                | Cancel and close                                  |
 
+Clicking the extension icon in the toolbar also activates region selection mode directly.
+
 <br>
 
 ## Selection Modifiers
@@ -98,18 +100,26 @@ git clone https://github.com/arsalan06106/SwiftSelect-capture-copy-download-scre
 
 ```
 SwiftSelect/
-├── manifest.json        # Extension config (MV3)
-├── background.js        # Service worker entry
-├── contentScript.js     # Page injection
-├── capture.js           # Screenshot capture engine
-├── events.js            # Input & event handling
-├── ui.js                # Toolbar & overlay rendering
-├── styles.js            # Dynamic style injection
-├── theme.js             # Light/dark theme logic
-├── popup.html / .js     # Extension popup
-├── menu.html            # Context menu UI
-├── offscreen.html / .js # Offscreen document for clipboard ops
-└── icons/               # Extension icons
+├── manifest.json            # Extension config (MV3)
+├── background.js            # Service worker — command routing, offscreen doc management
+├── contentScript.js         # Entry point injected into pages, loads src/ modules
+├── popup.html               # Extension popup UI
+├── popup.js                 # Popup button handlers
+├── menu.html                # Context menu UI
+├── menu.js                  # Menu theme toggle & button interactions
+├── offscreen.html           # Offscreen document shell (MV3 clipboard/tabCapture)
+├── offscreen.js             # Offscreen logic — full-page stitching & clipboard ops
+├── styles.css               # All overlay, toolbar & selection styles
+├── src/
+│   ├── ui.js                # Toolbar & overlay rendering
+│   ├── events.js            # Input & event handling (drag, modifiers, element detection)
+│   ├── theme.js             # Light/dark theme logic
+│   └── capture/
+│       ├── region.js        # Region & visible-area capture engine
+│       ├── fullpage.js      # Scroll-capture with sticky-element neutralisation
+│       ├── download.js      # File-save & status-bar transition logic
+│       └── utils.js         # Shared helpers (image loading, smart filenames, cursor toggle)
+└── icons/                   # Extension icons (48px, 128px)
 ```
 
 </details>
@@ -119,16 +129,18 @@ SwiftSelect/
 
 <br>
 
-| Permission       | Reason                                                           |
-| :--------------- | :--------------------------------------------------------------- |
-| `activeTab`      | Access the current tab to capture content                        |
-| `scripting`      | Inject the capture overlay into pages                            |
-| `tabs`           | Query tab state for multi-step captures                          |
-| `tabCapture`     | Capture visible tab content as an image                          |
-| `clipboardWrite` | Copy screenshots to clipboard automatically                      |
-| `offscreen`      | Create an offscreen document for clipboard API (MV3 requirement) |
-| `storage`        | Persist user preferences (theme, etc.)                           |
-| `<all_urls>`     | Operate on any webpage                                           |
+| Permission        | Reason                                                           |
+| :---------------- | :--------------------------------------------------------------- |
+| `activeTab`       | Access the current tab to capture content                        |
+| `scripting`       | Inject the capture overlay into pages                            |
+| `tabs`            | Query tab state for multi-step captures                          |
+| `tabCapture`      | Capture visible tab content as an image                          |
+| `clipboardWrite`  | Copy screenshots to clipboard automatically                      |
+| `offscreen`       | Create an offscreen document for clipboard API (MV3 requirement) |
+| `storage`         | Persist user preferences (theme, etc.)                           |
+| `<all_urls>` ¹    | Operate on any webpage                                           |
+
+¹ Declared under `host_permissions` in Manifest V3.
 
 </details>
 
