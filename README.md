@@ -6,15 +6,14 @@
 
 # SwiftSelect
 
-**Capture · Copy · Download — in one motion.**
-
+Capture, copy, and download in a single motion.
 
 <br>
 
 [![Chrome](https://raw.githubusercontent.com/creosB/creosB/refs/heads/main/assets/Chrome%20Web%20Store.svg)](https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec)
 
-The fastest screenshot tool for Chrome. Select a region, grab the viewport, or scroll-capture an entire page.
-<br>Everything lands on your clipboard automatically.
+The fastest screenshot tool for Chrome. Select a region, grab the viewport, or scroll-capture an entire page. Everything lands on your clipboard automatically.
+
 </div>
 
 <br>
@@ -23,30 +22,30 @@ The fastest screenshot tool for Chrome. Select a region, grab the viewport, or s
 
 <br>
 
-## Why SwiftSelect
+## The Mechanics of SwiftSelect
 
-Most screenshot extensions are slow, cluttered, or want you to sign up for something. SwiftSelect does exactly three things and does them instantly:
+Most screenshot extensions are slow, cluttered, or demand unnecessary sign-ups. SwiftSelect does exactly three things and executes them instantly.
 
-| Mode              | What happens                                     | Output                                  |
-| :---------------- | :----------------------------------------------- | :-------------------------------------- |
-| **Region Select** | Draw a box around anything on the page           | Copied to clipboard                     |
-| **Visible Area**  | Captures the current viewport in one click       | Copied to clipboard + optional download |
-| **Full Page**     | Scrolls the entire page and stitches it together | Saved as a file                         |
+| Mode | Action | Output |
+| :--- | :--- | :--- |
+| Region Select | Draw a box around any element | Copied to clipboard |
+| Visible Area | Capture the current viewport | Copied to clipboard and optional download |
+| Full Page | Scroll and stitch the entire page | Saved as a file |
 
-Full-page capture works on complex SPAs — Notion, Slack, Gemini, you name it.
+Full-page capture reliably processes complex single-page applications, bypassing sticky headers and fixed elements.
 
 <br>
 
-## Keyboard Shortcuts
+## Shortcuts
 
-Every action has a shortcut. No toolbar hunting required.
+Every action has a dedicated shortcut to eliminate toolbar hunting.
 
-| Shortcut                      | Action                                            |
-| :---------------------------- | :------------------------------------------------ |
-| <kbd>Alt</kbd> + <kbd>X</kbd> | Activate SwiftSelect (opens the floating toolbar) |
-| <kbd>Alt</kbd> + <kbd>S</kbd> | Capture visible area & download                   |
-| <kbd>Alt</kbd> + <kbd>F</kbd> | Capture full page & download                      |
-| <kbd>Esc</kbd>                | Cancel and close                                  |
+| Shortcut | Action |
+| :--- | :--- |
+| <kbd>Alt</kbd> + <kbd>X</kbd> | Activate SwiftSelect and open the floating toolbar |
+| <kbd>Alt</kbd> + <kbd>S</kbd> | Capture visible area and download |
+| <kbd>Alt</kbd> + <kbd>F</kbd> | Capture full page and download |
+| <kbd>Esc</kbd> | Cancel and close |
 
 Clicking the extension icon in the toolbar also activates region selection mode directly.
 
@@ -54,49 +53,58 @@ Clicking the extension icon in the toolbar also activates region selection mode 
 
 ## Selection Modifiers
 
-While dragging a region selection, hold a modifier key to change behavior:
+While dragging a region selection, hold a modifier key to alter the capture behavior.
 
-| Hold                                   | Effect                                                          |
-| :------------------------------------- | :-------------------------------------------------------------- |
-| <kbd>Shift</kbd>                       | Constrain to a perfect square                                   |
-| <kbd>Space</kbd>                       | Reposition the selection box mid-drag                           |
-| <kbd>Ctrl</kbd> / <kbd>⌘</kbd> + hover | Auto-detect elements (images, cards, videos) — click to capture |
+| Hold | Effect |
+| :--- | :--- |
+| <kbd>Shift</kbd> | Constrain to a perfect square |
+| <kbd>Space</kbd> | Reposition the selection box mid-drag |
+| <kbd>Ctrl</kbd> / <kbd>⌘</kbd> + hover | Auto-detect elements like images or cards, then click to capture |
 
 <br>
 
 ## Theming
 
-The floating toolbar includes a light/dark toggle. Your preference persists across sessions via `chrome.storage`.
+The floating toolbar includes a toggle for light and dark modes. The interface also supports a liquid glass aesthetic. Preferences persist across sessions.
 
 <br>
 
-## Install
+## Installation
 
-### ◆ Chrome Web Store (recommended)
+### 🌐 Chrome Web Store (Recommended)
 
 <a href="https://chromewebstore.google.com/detail/swiftselect-capture-copy/aboceojignbeaclebdpjjgkocmdldoec">
   <img src="https://img.shields.io/badge/Install_SwiftSelect-Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Install from Chrome Web Store">
 </a>
 
-### ◆ From Source
+### 📦 From Releases
+
+1. Navigate to the [Releases](https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots/releases) page and download the latest `.zip` file.
+2. Extract the downloaded archive to a permanent folder on your local machine.
+3. Open `chrome://extensions/` in your browser.
+4. Enable Developer mode using the toggle in the top right corner.
+5. Click Load unpacked and select the extracted folder.
+6. Pin SwiftSelect from the extensions menu.
+
+### 💻 From Source
 
 ```bash
-git clone https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git
+git clone [https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git](https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git)
 ```
 
-1. Navigate to `chrome://extensions/`
-2. Enable **Developer mode** (top-right toggle)
-3. Click **Load unpacked** → select the cloned directory
-4. Pin SwiftSelect from the extensions menu — done
+1. Open `chrome://extensions/`
+2. Enable Developer mode using the toggle in the top right corner.
+3. Click Load unpacked and select the cloned repository directory.
+4. Pin SwiftSelect from the extensions menu.
 
 <br>
 
 <details>
-<summary><strong>Project Structure</strong></summary>
+<summary>Project Structure</summary>
 
 <br>
 
-```
+```text
 SwiftSelect/
 ├── manifest.json            # Extension config (MV3)
 ├── background.js            # Service worker — command routing, offscreen doc management
@@ -123,22 +131,22 @@ SwiftSelect/
 </details>
 
 <details>
-<summary><strong>Permissions & Why</strong></summary>
+<summary>Permissions Justification</summary>
 
 <br>
 
-| Permission        | Reason                                                           |
-| :---------------- | :--------------------------------------------------------------- |
-| `activeTab`       | Access the current tab to capture content                        |
-| `scripting`       | Inject the capture overlay into pages                            |
-| `tabs`            | Query tab state for multi-step captures                          |
-| `tabCapture`      | Capture visible tab content as an image                          |
-| `clipboardWrite`  | Copy screenshots to clipboard automatically                      |
-| `offscreen`       | Create an offscreen document for clipboard API (MV3 requirement) |
-| `storage`         | Persist user preferences (theme, etc.)                           |
-| `<all_urls>` ¹    | Operate on any webpage                                           |
+| Permission | Reason |
+| :--- | :--- |
+| `activeTab` | Access the current tab to capture content |
+| `scripting` | Inject the capture overlay into pages |
+| `tabs` | Query tab state for multi-step captures |
+| `tabCapture` | Capture visible tab content as an image |
+| `clipboardWrite` | Copy screenshots to clipboard automatically |
+| `offscreen` | Create an offscreen document for clipboard API (MV3 requirement) |
+| `storage` | Persist user preferences |
+| `<all_urls>` | Operate on any webpage |
 
-¹ Declared under `host_permissions` in Manifest V3.
+Declared under `host_permissions` in Manifest V3.
 
 </details>
 
@@ -146,8 +154,7 @@ SwiftSelect/
 
 ## Contributing
 
-Found a bug or have a feature idea? [Open an issue](https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots/issues).
-Pull requests are welcome.
+If you discover an anomaly or have a feature concept, [open an issue](https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots/issues). Pull requests are evaluated and welcome.
 
 <br>
 
@@ -163,9 +170,9 @@ Pull requests are welcome.
 
 <br>
 
-**Built by [@arsalan06106](https://github.com/arsalan06106)**
+Built by <a href="https://github.com/arsalan06106">@arsalan06106</a>
 
-If SwiftSelect saves you time, consider leaving a ★ on the repo.
+If SwiftSelect saves you time, consider leaving a ★ on the repository.
 
 <br>
 
