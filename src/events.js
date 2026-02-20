@@ -274,9 +274,18 @@ export function onPointerUp(e) {
       return;
     }
 
-    window.SwiftSelect.ui.setStatus("Canceled", 1500);
+    // Force clear any pending artifacts before spawning a new status
+    if (window.SwiftSelect.ui.statusHost) {
+      if (window.SwiftSelect.ui.statusHost.parentNode) {
+        window.SwiftSelect.ui.statusHost.parentNode.removeChild(
+          window.SwiftSelect.ui.statusHost,
+        );
+      }
+    }
+
     cleanup();
     window.SwiftSelect.ui.cleanup();
+    window.SwiftSelect.ui.setStatus("Canceled", 1500);
     return;
   }
 
@@ -324,12 +333,23 @@ export function preventAll(e) {
   e.stopImmediatePropagation();
 }
 
+export function onScroll(e) {
+  if (
+    window.SwiftSelect &&
+    window.SwiftSelect.ui &&
+    window.SwiftSelect.ui.releaseFreeze
+  ) {
+    window.SwiftSelect.ui.releaseFreeze();
+  }
+}
+
 const boundPointerDown = onPointerDown;
 const boundPointerMove = onPointerMove;
 const boundPointerUp = onPointerUp;
 const boundKeyDown = onKeyDown;
 const boundKeyUp = onKeyUp;
 const boundPreventAll = preventAll;
+const boundScroll = onScroll;
 
 export function addListeners() {
   init();
@@ -342,6 +362,9 @@ export function addListeners() {
   document.addEventListener("click", boundPreventAll, true);
   document.addEventListener("dblclick", boundPreventAll, true);
   document.addEventListener("contextmenu", boundPreventAll, true);
+  document.addEventListener("scroll", boundScroll, true);
+  document.addEventListener("wheel", boundScroll, true);
+  window.addEventListener("resize", boundScroll, true);
 }
 
 export function removeListeners() {
@@ -354,6 +377,9 @@ export function removeListeners() {
   document.removeEventListener("click", boundPreventAll, true);
   document.removeEventListener("dblclick", boundPreventAll, true);
   document.removeEventListener("contextmenu", boundPreventAll, true);
+  document.removeEventListener("scroll", boundScroll, true);
+  document.removeEventListener("wheel", boundScroll, true);
+  window.removeEventListener("resize", boundScroll, true);
 }
 
 export function cleanup() {

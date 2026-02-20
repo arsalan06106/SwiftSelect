@@ -29,6 +29,14 @@ export let hudEl = null;
 export let curtains = [];
 export let overlayShadow = null;
 export let guideShadow = null;
+export let freezeBg = null;
+
+export function releaseFreeze() {
+  if (freezeBg && freezeBg.style.opacity !== "0") {
+    freezeBg.style.opacity = "0";
+    freezeBg.style.pointerEvents = "none";
+  }
+}
 
 // Track timers
 export let hideStatusTimer = null;
@@ -135,16 +143,28 @@ export function createSvg(viewBox, pathData, className = "") {
 }
 
 export function setCrosshairCursor() {
-  document.body.style.cursor = "crosshair";
-  document.documentElement.style.cursor = "crosshair";
+  document.body.style.setProperty("cursor", "crosshair", "important");
+  document.documentElement.style.setProperty(
+    "cursor",
+    "crosshair",
+    "important",
+  );
+  if (!document.getElementById("qs-cursor-style")) {
+    const style = document.createElement("style");
+    style.id = "qs-cursor-style";
+    style.textContent = "body *, html * { cursor: crosshair !important; }";
+    document.head.appendChild(style);
+  }
 }
 
 export function removeCrosshairCursor() {
-  document.body.style.cursor = "";
-  document.documentElement.style.cursor = "";
+  document.body.style.removeProperty("cursor");
+  document.documentElement.style.removeProperty("cursor");
+  const style = document.getElementById("qs-cursor-style");
+  if (style) style.remove();
 }
 
-export function ensureUi() {
+export async function ensureUi() {
   setCrosshairCursor();
 
   if (!overlayHost) {
@@ -152,11 +172,47 @@ export function ensureUi() {
     overlayHost = host;
     overlay = el;
     overlayShadow = shadow;
-    overlayHost.style.pointerEvents = "auto";
+    overlayHost.style.pointerEvents = "none";
+
+    freezeBg = document.createElement("div");
+    freezeBg.className = "qs-freeze-bg";
+    freezeBg.style.position = "absolute";
+    freezeBg.style.inset = "0";
+    freezeBg.style.zIndex = "1";
+    freezeBg.style.backgroundSize = `${window.innerWidth}px ${window.innerHeight}px`;
+    freezeBg.style.backgroundPosition = "top left";
+    freezeBg.style.backgroundRepeat = "no-repeat";
+    freezeBg.style.pointerEvents = "none";
+    freezeBg.style.opacity = "0";
+    freezeBg.style.transition = "opacity 0.15s ease-out";
+    overlay.appendChild(freezeBg);
+
+    // clear any lingering artifacts entirely before snapshotting
+    if (statusHost) {
+      if (hideStatusTimer) clearTimeout(hideStatusTimer);
+      if (statusHost.parentNode) statusHost.parentNode.removeChild(statusHost);
+      statusHost = null;
+      statusEl = null;
+      currentStatus = null;
+    }
+
+    // Yield main thread twice to aggressively force the browser to visually
+    // repaint the DOM, confirming the toast deletion is physically rendered
+    // before the background camera snatches the freezeBg snapshot.
+    await new Promise((r) => requestAnimationFrame(r));
+    await new Promise((r) => requestAnimationFrame(r));
+
+    chrome.runtime.sendMessage({ type: "capture-visible-tab" }, (resp) => {
+      if (resp && resp.success) {
+        freezeBg.style.backgroundImage = `url(${resp.dataUrl})`;
+        freezeBg.style.opacity = "1";
+      }
+    });
 
     curtains = [];
     const c = document.createElement("div");
     c.className = "qs-curtain";
+    c.style.zIndex = "2";
     overlay.appendChild(c);
     curtains.push(c);
 
@@ -550,9 +606,18 @@ export function setButtonLoading(action, loading) {
 
 export async function hideUiForCapture() {
   if (guideHost) guideHost.style.display = "none";
-  if (statusHost) statusHost.style.display = "none";
   if (overlayHost) overlayHost.style.display = "none";
   if (highlighterHost) highlighterHost.style.display = "none";
+
+  if (statusHost && statusHost.style.display !== "none") {
+    if (hideStatusTimer) clearTimeout(hideStatusTimer);
+    statusEl.classList.add("qs-hiding");
+    statusEl.style.display = "none";
+    statusHost.style.display = "none";
+    statusEl.classList.remove("qs-hiding");
+    currentStatus = null;
+  }
+
   await new Promise((r) => requestAnimationFrame(r));
   await new Promise((r) => setTimeout(r, 100));
 }
@@ -578,6 +643,7 @@ export function cleanup() {
   overlay = null;
   box = null;
   hudEl = null;
+  freezeBg = null;
   curtains = [];
 
   if (highlighterHost && highlighterHost.parentNode)
@@ -600,6 +666,18 @@ export function cleanup() {
     guideHost = null;
     guideEl = null;
   }
+
+  // Forcefully remove statusHost immediately on cleanup to avoid freeze ghosting
+  if (hideStatusTimer) {
+    clearTimeout(hideStatusTimer);
+    hideStatusTimer = null;
+  }
+  if (statusHost && statusHost.parentNode) {
+    statusHost.parentNode.removeChild(statusHost);
+  }
+  statusHost = null;
+  statusEl = null;
+  currentStatus = null;
 }
 
 export function updateBadge(text, color = "#ff6a61") {

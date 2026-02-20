@@ -35,11 +35,23 @@ export async function handleCaptureVisible() {
     if (!resp?.success) throw new Error(resp?.error || "Capture failed");
 
     const img = await loadImage(resp.dataUrl);
+
+    // Mathematically crop out the native browser scrollbars
+    const dpr = window.devicePixelRatio || 1;
+    const cropW = Math.min(
+      img.width,
+      Math.round(document.documentElement.clientWidth * dpr),
+    );
+    const cropH = Math.min(
+      img.height,
+      Math.round(document.documentElement.clientHeight * dpr),
+    );
+
     const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
+    canvas.width = cropW;
+    canvas.height = cropH;
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
+    ctx.drawImage(img, 0, 0, cropW, cropH, 0, 0, cropW, cropH);
 
     const blob = await new Promise((res, rej) =>
       canvas.toBlob(
@@ -90,7 +102,8 @@ export async function handleCaptureAndDownload() {
     window.SwiftSelect.events.removeListeners();
 
     toggleCursor(true);
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => requestAnimationFrame(r));
+    await new Promise((r) => requestAnimationFrame(r));
 
     const resp = await new Promise((resolve) => {
       chrome.runtime.sendMessage({ type: "capture-visible-tab" }, resolve);
@@ -98,11 +111,23 @@ export async function handleCaptureAndDownload() {
     if (!resp?.success) throw new Error(resp?.error || "Capture failed");
 
     const img = await loadImage(resp.dataUrl);
+
+    // Mathematically crop out the native browser scrollbars
+    const dpr = window.devicePixelRatio || 1;
+    const cropW = Math.min(
+      img.width,
+      Math.round(document.documentElement.clientWidth * dpr),
+    );
+    const cropH = Math.min(
+      img.height,
+      Math.round(document.documentElement.clientHeight * dpr),
+    );
+
     const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
+    canvas.width = cropW;
+    canvas.height = cropH;
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
+    ctx.drawImage(img, 0, 0, cropW, cropH, 0, 0, cropW, cropH);
 
     const blob = await new Promise((res, rej) =>
       canvas.toBlob(
@@ -149,7 +174,8 @@ export async function captureAndCrop(viewRect) {
     await window.SwiftSelect.ui.hideUiForCapture();
 
     toggleCursor(true);
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => requestAnimationFrame(r));
+    await new Promise((r) => requestAnimationFrame(r));
 
     const resp = await new Promise((resolve) => {
       chrome.runtime.sendMessage({ type: "capture-visible-tab" }, resolve);

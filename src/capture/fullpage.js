@@ -113,40 +113,62 @@ export function findInnerScrollContainer() {
   const winH = window.innerHeight;
   const winW = window.innerWidth;
 
-  // Strategy: Most significant inner scrollers are high-level containers.
-  // We scan direct children of body and major wrappers.
-  const roots = [
+  // Deep scan all potential scrolling containers to catch Gemini's custom elements
+  const walker = document.createTreeWalker(
     document.body,
-    ...Array.from(document.body.children).slice(0, 5),
-  ];
-  const candidates = new Set();
-
-  for (const root of roots) {
-    if (!root) continue;
-    candidates.add(root);
-    // Add first layer of children for common wrapper patterns (e.g. #app, .main)
-    Array.from(root.children).forEach((child) => candidates.add(child));
-  }
+    NodeFilter.SHOW_ELEMENT,
+    {
+      acceptNode: (node) => {
+        const tag = node.tagName;
+        if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT")
+          return NodeFilter.FILTER_REJECT;
+        if (node.id === "swift-select-filters") return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    },
+  );
 
   let bestElement = null;
   let bestArea = 0;
 
-  for (const el of candidates) {
-    if (el.clientWidth < winW * 0.3 && el.clientHeight < winH * 0.3) continue;
+  let el = document.body;
+  const candidates = [document.body];
 
-    const style = window.getComputedStyle(el);
+  while ((el = walker.nextNode())) {
+    candidates.push(el);
+  }
+
+  for (const cand of candidates) {
     if (
-      (style.overflowY === "auto" || style.overflowY === "scroll") &&
-      el.scrollHeight > el.clientHeight + 50
+      !cand ||
+      cand.clientWidth < winW * 0.3 ||
+      cand.clientHeight < winH * 0.3
+    )
+      continue;
+
+    const style = window.getComputedStyle(cand);
+    const overflowY = style.overflowY;
+    const overflow = style.overflow;
+
+    if (
+      (overflowY === "auto" ||
+        overflowY === "scroll" ||
+        overflow === "auto" ||
+        overflow === "scroll") &&
+      cand.scrollHeight > cand.clientHeight + 50
     ) {
-      const r = el.getBoundingClientRect();
+      const r = cand.getBoundingClientRect();
       const area = r.width * r.height;
+
+      // Weight the container by how much screen space it takes up.
+      // E.g., a main chat wrapper will be huge.
       if (area > bestArea && area > winH * winW * 0.2) {
         bestArea = area;
-        bestElement = el;
+        bestElement = cand;
       }
     }
   }
+
   return bestElement;
 }
 
@@ -219,14 +241,16 @@ export function applyUnrollCSS(contentHeight) {
       max-height: none !important;
       ${heightCSS}
     }
-    html::-webkit-scrollbar, body::-webkit-scrollbar {
-      display: none !important; width: 0 !important; height: 0 !important;
+    html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
+      display: none !important; 
+      width: 0 !important; 
+      height: 0 !important;
+      opacity: 0 !important;
     }
-    html, body { scrollbar-width: none !important; }
-    *::-webkit-scrollbar {
-      display: none !important; width: 0 !important; height: 0 !important;
+    html, body, * { 
+      scrollbar-width: none !important; 
+      -ms-overflow-style: none !important; 
     }
-    * { scrollbar-width: none !important; }
   `;
   document.head.appendChild(_unrollStyle);
   neutralizeStickyElements();
@@ -295,7 +319,7 @@ export function handleUnrollPage() {
     innerHeight: window.innerHeight,
     devicePixelRatio: window.devicePixelRatio || 1,
     scrollHeight: Math.max(contentHeight, rect.height),
-    rect: { height: rect.height, bottom: rect.bottom },
+    rect: { height: rect.height, bottom: rect.bottom, width: rect.width },
     rectBottom: rect.bottom,
     bgColor,
     abort: _abortCapture,
@@ -349,8 +373,15 @@ export async function handleCaptureFullPage() {
       btn.appendChild(ps);
     }
 
-    if (window.SwiftSelect.ui.guideHost)
+    if (window.SwiftSelect.ui.guideHost) {
       window.SwiftSelect.ui.guideHost.style.display = "none";
+    }
+    if (window.SwiftSelect.ui.overlayHost) {
+      window.SwiftSelect.ui.overlayHost.style.display = "none";
+    }
+    if (typeof window.SwiftSelect.ui.releaseFreeze === "function") {
+      window.SwiftSelect.ui.releaseFreeze();
+    }
 
     const tCursor =
       "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=), auto";
@@ -365,7 +396,7 @@ export async function handleCaptureFullPage() {
       chrome.runtime.sendMessage(
         {
           type: "start-fullpage-capture",
-          frameInterval: 50,
+          frameInterval: 15,
           format: "image/jpeg",
           quality: 0.9,
         },
@@ -418,18 +449,20 @@ export async function handleCaptureFullPage() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    const statusMsg = result.clipboardSuccess
-      ? "Page Saved & Copied"
-      : "Page Saved";
-    window.SwiftSelect.ui.setStatus(statusMsg, 3000, "saved");
-    window.SwiftSelect.ui.updateBadge("✓", "#198754");
-    setTimeout(() => window.SwiftSelect.ui.updateBadge(""), 3000);
-
     document.documentElement.style.cursor = "";
     document.body.style.cursor = "";
     window.SwiftSelect.ui.cleanup();
     window.SwiftSelect.events.removeListeners();
     window.removeEventListener("keydown", onAbortKey, true);
+
+    const statusMsg = result.clipboardSuccess
+      ? "Page Saved & Copied"
+      : "Page Saved";
+    // Now that the UI has been securely torn down (including any previous toasts),
+    // we can safely generate the new success toast without `cleanup()` immediately destroying it.
+    window.SwiftSelect.ui.setStatus(statusMsg, 3000, "saved");
+    window.SwiftSelect.ui.updateBadge("✓", "#198754");
+    setTimeout(() => window.SwiftSelect.ui.updateBadge(""), 3000);
   } catch (err) {
     console.error("Full page capture error:", err);
     handleRestoreUnroll();

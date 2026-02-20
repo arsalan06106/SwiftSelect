@@ -58,7 +58,7 @@ class FrameGrabber {
     do {
       attempts++;
       frame = await this.ic.grabFrame();
-      if (!this.detector.detect(frame) || attempts >= 3) break;
+      if (!this.detector.detect(frame) || attempts >= 20) break;
       await new Promise((r) => setTimeout(r, 16));
     } while (true);
     return frame;
@@ -201,7 +201,7 @@ async function captureFullPage(
   const grabber = new FrameGrabber(stream.getVideoTracks()[0]);
 
   // Wait a moment for the stream to start producing frames
-  await new Promise((r) => setTimeout(r, 50));
+  await new Promise((r) => setTimeout(r, 10));
 
   // The viewport height in logical pixels (used as step size)
   const C = innerHeight;
@@ -309,9 +309,9 @@ async function captureFullPage(
     throw new Error("No frames captured");
   }
 
-  const fullPixelHeight = frames[frames.length - 1].dy + contentH;
-  const targetHeight = Math.ceil(rectHeight * dpr);
-  const canvasHeight = Math.min(fullPixelHeight, targetHeight);
+  // Strictly clamp the canvas height to the actual passed rectHeight
+  // (Prevents the final overlapped frame from dragging the canvas logic downward)
+  const canvasHeight = Math.ceil(rectHeight * dpr);
 
   const canvas = document.createElement("canvas");
   canvas.width = contentW;
