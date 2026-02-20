@@ -89,7 +89,7 @@ The floating toolbar includes a toggle for light and dark modes. The interface a
 ### 💻 From Source
 
 ```bash
-git clone [https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git](https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git)
+git clone https://github.com/arsalan06106/SwiftSelect-capture-copy-download-screenshots.git
 ```
 
 1. Open `chrome://extensions/`
