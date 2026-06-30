@@ -126,33 +126,34 @@
   white-space: nowrap; /* Never wrap */
 
   transform-origin: center center;
-  animation: liquidExpand 400ms cubic-bezier(0.5, 1.5, 0.5, 1) forwards;
+  animation: liquidExpand 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   opacity: 0;
+  will-change: transform, opacity;
 }
 
 @keyframes liquidExpand {
   0% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: translate3d(0, -6px, 0) scale(0.975);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 @keyframes liquidCollapse {
   0% {
     opacity: 1;
-    transform: scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   100% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: translate3d(0, -4px, 0) scale(0.985);
   }
 }
 
 .qs-guide.qs-hiding {
-  animation: liquidCollapse 300ms ease-in forwards !important;
+  animation: liquidCollapse 180ms cubic-bezier(0.4, 0, 1, 1) forwards !important;
   pointer-events: none !important;
 }
 
@@ -179,9 +180,11 @@
   border-width: 2px;
   border-style: solid;
   transition:
-    transform 0.1s cubic-bezier(0.2, 0, 0, 1),
-    background 0.1s ease,
-    box-shadow 0.1s ease;
+    transform 120ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,12 +203,16 @@
   width: 24px;
   height: 24px;
   fill: currentColor;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  transition:
+    transform 160ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 140ms ease,
+    color 140ms ease,
+    fill 140ms ease;
   display: block; /* Remove inline-block gaps */
 }
 
 .qs-guide-btn:active {
-  transform: scale(0.96) translateY(1px);
+  transform: scale(0.97) translateY(1px);
 }
 
 /* Segmented Group Layout */
@@ -316,32 +323,33 @@
   max-width: 90vw;
   min-height: 52px;
   opacity: 0;
-  animation: liquidSlideUp 400ms cubic-bezier(0.5, 1.5, 0.5, 1) forwards;
+  animation: liquidSlideUp 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
 }
 
 @keyframes liquidSlideUp {
   0% {
     opacity: 0;
-    transform: translate(-50%, 15px) scale(0.95);
+    transform: translate3d(-50%, 10px, 0) scale(0.98);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translate3d(-50%, 0, 0) scale(1);
   }
 }
 @keyframes liquidSlideDown {
   0% {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translate3d(-50%, 0, 0) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, 15px) scale(0.95);
+    transform: translate3d(-50%, 8px, 0) scale(0.985);
   }
 }
 
 .qs-status.qs-hiding {
-  animation: liquidSlideDown 300ms ease-in forwards !important;
+  animation: liquidSlideDown 180ms cubic-bezier(0.4, 0, 1, 1) forwards !important;
   pointer-events: none !important;
 }
 .qs-status.no-anim {
@@ -385,7 +393,13 @@
   border: none;
   cursor: pointer;
   margin-left: auto;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  transition:
+    transform 120ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    opacity 140ms ease;
   padding: 0;
   min-width: 40px;
   pointer-events: auto; /* Fix clickability */
@@ -519,7 +533,7 @@
   border: 2px solid #1f1f1f;
 }
 .qs-save-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.96) translateY(1px);
   background: #000000;
 }
 
@@ -619,7 +633,7 @@
 }
 .qs-theme-dark .qs-save-btn:active,
 .qs-theme-dark .qs-status.qs-success .qs-save-btn:active {
-  transform: scale(0.95) !important;
+  transform: scale(0.96) translateY(1px) !important;
   background: #eeeeee !important;
 }
 
@@ -898,6 +912,17 @@
   transition: transform 0.1s ease-out;
 }
 
+.qs-theme-glass .qs-segmented .qs-guide-btn,
+.qs-theme-glass .qs-guide-buttons > .qs-guide-btn:not(.qs-theme-toggle),
+.qs-theme-glass .qs-save-btn {
+  transition:
+    transform 140ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease !important;
+  will-change: transform;
+}
+
 /* SVGs - Normal (No forced fill/stroke overrides) */
 .qs-theme-glass .qs-segmented .qs-guide-btn svg,
 .qs-theme-glass .qs-guide-buttons > .qs-guide-btn:not(.qs-theme-toggle) svg,
@@ -915,12 +940,10 @@
 .qs-theme-glass .qs-save-btn:hover {
   background-color: color-mix(
     in srgb,
-    var(--c-glass) 50%,
+    var(--c-glass) 46%,
     transparent
   ) !important;
-  transform: scale(
-    1.05
-  ); /* Spring bezier handled by transition property above */
+  transform: translate3d(0, -1px, 0) scale(1.018);
 }
 
 /* Active State (Click Compress) */
@@ -931,7 +954,7 @@
     var(--c-glass) 48%,
     transparent
   ) !important;
-  transform: scale(0.96) translateY(1.5px) !important;
+  transform: scale(0.965) translateY(1px) !important;
   box-shadow:
     inset 0 1px 0 0
       color-mix(
@@ -976,8 +999,9 @@
         transparent
       ) !important;
   transition:
-    transform 0.1s cubic-bezier(0.2, 0, 0, 1),
-    background 0.1s ease !important;
+    transform 90ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 90ms ease,
+    box-shadow 90ms ease !important;
 }
 
 /* Theme Toggle Button in Glass Mode */
@@ -1050,7 +1074,7 @@
   position: absolute;
   bottom: -34px;
   left: 50%;
-  transform: translateX(-50%) scale(0.8);
+  transform: translate3d(-50%, 3px, 0) scale(0.96);
   background: rgba(28, 27, 31, 0.9); /* Default Dark Tooltip */
   color: white;
   padding: 4px 8px;
@@ -1059,14 +1083,17 @@
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.2s ease;
+  transition:
+    opacity 140ms ease,
+    transform 160ms cubic-bezier(0.2, 0, 0, 1),
+    bottom 160ms cubic-bezier(0.2, 0, 0, 1);
   font-family: "Google Sans", system-ui, sans-serif;
   z-index: 2147483649;
   display: none;
 }
 .qs-guide-btn:hover::before {
   opacity: 1;
-  transform: translateX(-50%) scale(1);
+  transform: translate3d(-50%, 0, 0) scale(1);
   bottom: -40px;
 }
 
@@ -1079,10 +1106,11 @@
 /* Loader, HUD, Flash */
 .qs-guide-btn.qs-loading {
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.68;
 }
 .qs-guide-btn.qs-loading svg {
   opacity: 0;
+  transform: scale(0.86);
 }
 .qs-guide-btn.qs-loading::after {
   content: "";
@@ -1092,7 +1120,7 @@
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top: 2px solid white; /* Default White loader */
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 900ms linear infinite;
 }
 
 .qs-hud {
@@ -1116,6 +1144,7 @@
   transform: translate3d(0, 0, 0);
   will-change: transform;
   transform-origin: 0 0;
+  animation: hudMaterialize 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .qs-theme-dark.qs-hud {
   background: #1a1a1a;
@@ -1195,7 +1224,7 @@
   z-index: 2147483650;
   pointer-events: none;
   opacity: 0;
-  animation: qs-flash-anim 0.4s ease-out forwards;
+  animation: qs-flash-anim 360ms ease-out forwards;
 }
 .qs-flash.qs-flash-inverse {
   background: #1a1a1a;
@@ -1203,10 +1232,19 @@
 
 @keyframes qs-flash-anim {
   0% {
-    opacity: 0.6;
+    opacity: 0.5;
   }
   100% {
     opacity: 0;
+  }
+}
+@keyframes hudMaterialize {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 3px, 0) scale(0.985);
+  }
+  100% {
+    opacity: 1;
   }
 }
 @keyframes spin {
@@ -1462,6 +1500,32 @@
 }
 .qs-guide-btn:hover .fp-inner-lines {
   animation: lineWipe 0.6s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qs-guide,
+  .qs-status,
+  .qs-highlighter,
+  .qs-hud,
+  .qs-flash,
+  .qs-guide-btn:hover .eye-lid,
+  .qs-guide-btn:hover .eye-pupil,
+  .qs-guide-btn:hover .dl-arrow,
+  .qs-save-btn:hover .dl-arrow,
+  .qs-guide-btn:hover .fp-tl,
+  .qs-guide-btn:hover .fp-tr,
+  .qs-guide-btn:hover .fp-br,
+  .qs-guide-btn:hover .fp-bl,
+  .qs-guide-btn:hover .fp-inner-lines {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .qs-guide-btn,
+  .qs-guide-btn svg,
+  .qs-save-btn {
+    transition-duration: 1ms !important;
+  }
 }
 
 /* -------------------------------------------

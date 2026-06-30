@@ -89,6 +89,11 @@ async function writeToClipboardSilent(blob) {
   }
 }
 
+async function dataUrlToBlob(dataUrl) {
+  const response = await fetch(dataUrl);
+  return response.blob();
+}
+
 // ─── Main Capture Logic ──────────────────────────────────────────────
 
 /**
@@ -359,6 +364,21 @@ async function captureFullPage(
 
 // ─── Message Listener ────────────────────────────────────────────────
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.type === "write-image-clipboard") {
+    (async () => {
+      try {
+        const blob = await dataUrlToBlob(msg.dataUrl);
+        const success = await writeToClipboardSilent(blob);
+        sendResponse({ success });
+      } catch (err) {
+        console.error("Offscreen clipboard write error:", err);
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+
+    return true;
+  }
+
   if (msg.type === "start-offscreen-capture") {
     const { streamId, tabId, frameInterval, format, quality } = msg;
     captureFullPage(

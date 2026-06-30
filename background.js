@@ -119,6 +119,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // --- Clipboard write fallback for content scripts that lose focus ---
+  if (message?.type === "write-image-to-clipboard") {
+    (async () => {
+      try {
+        await ensureOffscreen();
+        const result = await chrome.runtime.sendMessage({
+          type: "write-image-clipboard",
+          dataUrl: message.dataUrl,
+        });
+        sendResponse(result);
+      } catch (err) {
+        console.error("write-image-to-clipboard error:", err);
+        sendResponse({ success: false, error: err.message });
+      } finally {
+        await closeOffscreen();
+      }
+    })();
+
+    return true;
+  }
+
   // --- New: Start full page capture via offscreen document ---
   if (message?.type === "start-fullpage-capture") {
     const tabId = sender.tab?.id;

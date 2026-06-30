@@ -30,12 +30,18 @@ export let curtains = [];
 export let overlayShadow = null;
 export let guideShadow = null;
 export let freezeBg = null;
+export let freezeFrameDataUrl = null;
+export let freezeFramePromise = null;
+export let freezeFrameVersion = 0;
 
 export function releaseFreeze() {
   if (freezeBg && freezeBg.style.opacity !== "0") {
     freezeBg.style.opacity = "0";
     freezeBg.style.pointerEvents = "none";
   }
+  freezeFrameVersion++;
+  freezeFrameDataUrl = null;
+  freezeFramePromise = null;
 }
 
 // Track timers
@@ -48,6 +54,14 @@ export function setHideStatusTimer(timer) {
 
 export function setCurrentStatus(status) {
   currentStatus = status;
+}
+
+export function getFreezeFrameDataUrl() {
+  return freezeFrameDataUrl;
+}
+
+export function getFreezeFramePromise() {
+  return freezeFramePromise;
 }
 
 // Shared CSS Sheet
@@ -168,6 +182,10 @@ export async function ensureUi() {
   setCrosshairCursor();
 
   if (!overlayHost) {
+    const frameVersion = ++freezeFrameVersion;
+    freezeFrameDataUrl = null;
+    freezeFramePromise = null;
+
     const { host, el, shadow } = makeShadowOverlay("div", "qs-ovl");
     overlayHost = host;
     overlay = el;
@@ -202,11 +220,20 @@ export async function ensureUi() {
     await new Promise((r) => requestAnimationFrame(r));
     await new Promise((r) => requestAnimationFrame(r));
 
-    chrome.runtime.sendMessage({ type: "capture-visible-tab" }, (resp) => {
-      if (resp && resp.success) {
-        freezeBg.style.backgroundImage = `url(${resp.dataUrl})`;
-        freezeBg.style.opacity = "1";
-      }
+    freezeFramePromise = new Promise((resolve) => {
+      chrome.runtime.sendMessage({ type: "capture-visible-tab" }, (resp) => {
+        if (resp && resp.success && frameVersion === freezeFrameVersion) {
+          freezeFrameDataUrl = resp.dataUrl;
+          if (freezeBg) {
+            freezeBg.style.backgroundImage = `url(${resp.dataUrl})`;
+            freezeBg.style.opacity = "1";
+          }
+          resolve(resp.dataUrl);
+          return;
+        }
+
+        resolve(null);
+      });
     });
 
     curtains = [];
@@ -502,7 +529,7 @@ export function setStatus(msg, timeout = 1500, type = "info", noAnim = false) {
           statusEl.classList.remove("qs-hiding");
           currentStatus = null;
         }
-      }, 300);
+      }, 200);
     }, timeout);
   }
 }
@@ -587,7 +614,7 @@ export function triggerFlash(targetRect = null) {
 
   setTimeout(() => {
     if (host && host.parentNode) host.parentNode.removeChild(host);
-  }, 450);
+  }, 380);
 }
 
 export function setButtonLoading(action, loading) {
@@ -644,6 +671,9 @@ export function cleanup() {
   box = null;
   hudEl = null;
   freezeBg = null;
+  freezeFrameVersion++;
+  freezeFrameDataUrl = null;
+  freezeFramePromise = null;
   curtains = [];
 
   if (highlighterHost && highlighterHost.parentNode)
@@ -659,7 +689,7 @@ export function cleanup() {
       guideHost = null;
       guideEl = null;
       guideShadow = null;
-    }, 300);
+    }, 200);
   } else {
     if (guideHost && guideHost.parentNode)
       guideHost.parentNode.removeChild(guideHost);

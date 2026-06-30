@@ -29,17 +29,20 @@ export function handleSaveAction() {
     const saveBtn = statusEl.querySelector(".qs-save-btn");
 
     if (textSpan && saveBtn) {
-      textSpan.style.transition = "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
-      saveBtn.style.transition = "all 0.3s ease-out";
-      statusEl.style.transition = "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+      textSpan.style.transition =
+        "transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.14s ease";
+      saveBtn.style.transition =
+        "transform 0.16s cubic-bezier(0.2, 0, 0, 1), opacity 0.12s ease";
+      statusEl.style.transition =
+        "transform 0.18s cubic-bezier(0.22, 1, 0.36, 1)";
 
-      statusEl.style.transform = "translate(-50%, -3px) scale(1.05)";
+      statusEl.style.transform = "translate3d(-50%, -2px, 0) scale(1.015)";
       saveBtn.style.opacity = "0";
-      saveBtn.style.transform = "scale(0.7) translateX(10px)";
+      saveBtn.style.transform = "scale(0.9) translateX(6px)";
 
       setTimeout(() => {
-        textSpan.style.transform = "scale(0.9)";
-        textSpan.style.opacity = "0.3";
+        textSpan.style.transform = "translateY(2px)";
+        textSpan.style.opacity = "0.35";
 
         setTimeout(() => {
           textSpan.textContent = "Image Saved";
@@ -47,12 +50,12 @@ export function handleSaveAction() {
           statusEl.classList.add("qs-saved");
           saveBtn.remove();
 
-          textSpan.style.transform = "scale(1.1)";
+          textSpan.style.transform = "translateY(-1px)";
           textSpan.style.opacity = "1";
 
           setTimeout(() => {
-            textSpan.style.transform = "scale(1)";
-            statusEl.style.transform = "translate(-50%, 0) scale(1)";
+            textSpan.style.transform = "translateY(0)";
+            statusEl.style.transform = "translate3d(-50%, 0, 0) scale(1)";
           }, 100);
         }, 150);
       }, 100);

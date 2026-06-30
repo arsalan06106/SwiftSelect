@@ -1,6 +1,50 @@
 import { loadImage, toggleCursor } from "./utils.js";
 import { setLastBlob } from "./download.js";
 
+async function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () =>
+      reject(reader.error || new Error("FileReader failed"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function writeImageBlobToClipboard(blob) {
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({ "image/png": blob }),
+    ]);
+    return true;
+  } catch (clipErr) {
+    console.debug("Clipboard write from content failed:", clipErr);
+  }
+
+  try {
+    const dataUrl = await blobToDataUrl(blob);
+    const resp = await new Promise((resolve) => {
+      chrome.runtime.sendMessage(
+        { type: "write-image-to-clipboard", dataUrl },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            resolve({
+              success: false,
+              error: chrome.runtime.lastError.message,
+            });
+            return;
+          }
+          resolve(response);
+        },
+      );
+    });
+    return !!resp?.success;
+  } catch (offscreenErr) {
+    console.debug("Clipboard write from offscreen failed:", offscreenErr);
+    return false;
+  }
+}
+
 export async function captureFrame(retries = 3) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -61,15 +105,7 @@ export async function handleCaptureVisible() {
     );
     setLastBlob(blob);
 
-    let clipboardSuccess = false;
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
-      ]);
-      clipboardSuccess = true;
-    } catch (clipErr) {
-      console.debug("handleCaptureVisible: Clipboard write failed:", clipErr);
-    }
+    const clipboardSuccess = await writeImageBlobToClipboard(blob);
 
     window.SwiftSelect.ui.triggerFlash();
 
@@ -137,18 +173,7 @@ export async function handleCaptureAndDownload() {
     );
     setLastBlob(blob);
 
-    let clipboardSuccess = false;
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
-      ]);
-      clipboardSuccess = true;
-    } catch (clipErr) {
-      console.debug(
-        "handleCaptureAndDownload: Clipboard write failed:",
-        clipErr,
-      );
-    }
+    const clipboardSuccess = await writeImageBlobToClipboard(blob);
 
     const { handleSaveAction } = await import("./download.js");
     handleSaveAction();
@@ -171,18 +196,26 @@ export async function handleCaptureAndDownload() {
 
 export async function captureAndCrop(viewRect) {
   try {
-    await window.SwiftSelect.ui.hideUiForCapture();
-
     toggleCursor(true);
-    await new Promise((r) => requestAnimationFrame(r));
-    await new Promise((r) => requestAnimationFrame(r));
 
-    const resp = await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ type: "capture-visible-tab" }, resolve);
-    });
-    if (!resp?.success) throw new Error(resp?.error || "Capture failed");
+    let dataUrl = window.SwiftSelect.ui.getFreezeFrameDataUrl?.();
+    if (!dataUrl) {
+      dataUrl = await window.SwiftSelect.ui.getFreezeFramePromise?.();
+    }
 
-    const img = await loadImage(resp.dataUrl);
+    if (!dataUrl) {
+      await window.SwiftSelect.ui.hideUiForCapture();
+      await new Promise((r) => requestAnimationFrame(r));
+      await new Promise((r) => requestAnimationFrame(r));
+
+      const resp = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ type: "capture-visible-tab" }, resolve);
+      });
+      if (!resp?.success) throw new Error(resp?.error || "Capture failed");
+      dataUrl = resp.dataUrl;
+    }
+
+    const img = await loadImage(dataUrl);
     const dpr = window.devicePixelRatio || 1;
     const sx = Math.round(viewRect.left * dpr);
     const sy = Math.round(viewRect.top * dpr);
@@ -206,12 +239,8 @@ export async function captureAndCrop(viewRect) {
     );
     setLastBlob(blob);
 
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
-      ]);
-    } catch (clipErr) {
-      console.debug("captureAndCrop: Clipboard write failed:", clipErr);
+    const clipboardSuccess = await writeImageBlobToClipboard(blob);
+    if (!clipboardSuccess) {
       // Fallback: download if copy fails during selection
       const { handleSaveAction } = await import("./download.js");
       handleSaveAction();
