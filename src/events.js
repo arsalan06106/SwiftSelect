@@ -12,10 +12,182 @@ export let startY = 0;
 export let lastMouseX = 0;
 export let lastMouseY = 0;
 export let rect = { left: 0, top: 0, width: 0, height: 0 };
-export let snapTimer = null;
-export let lastSnapTime = 0;
+export let snapFrameId = null;
 export let highlightedRect = null;
+export let snapPointer = { x: 0, y: 0 };
 export let initialized = false;
+
+function clearSnapState({ clearSelection = true } = {}) {
+  if (snapFrameId) {
+    cancelAnimationFrame(snapFrameId);
+    snapFrameId = null;
+  }
+  if (window.SwiftSelect.ui.highlighterEl)
+    window.SwiftSelect.ui.highlighterEl.style.display = "none";
+  if (window.SwiftSelect.ui.highlighterHost)
+    window.SwiftSelect.ui.highlighterHost.style.display = "none";
+  window.SwiftSelect.ui.snapBlurPanels?.forEach(
+    (panel) => (panel.style.display = "none"),
+  );
+  highlightedRect = null;
+
+  if (window.SwiftSelect.ui.overlay)
+    window.SwiftSelect.ui.overlay.classList.remove("qs-snapping");
+
+  if (clearSelection) {
+    if (window.SwiftSelect.ui.box)
+      window.SwiftSelect.ui.box.style.display = "none";
+    if (window.SwiftSelect.ui.hudEl)
+      window.SwiftSelect.ui.hudEl.style.display = "none";
+    window.SwiftSelect.ui.curtains?.forEach((c) => (c.style.display = "none"));
+  }
+}
+
+function isExtensionUi(candidate) {
+  return (
+    candidate === window.SwiftSelect.ui.guideHost ||
+    candidate === window.SwiftSelect.ui.statusHost ||
+    candidate === window.SwiftSelect.ui.overlayHost ||
+    candidate === window.SwiftSelect.ui.highlighterHost ||
+    candidate.closest?.(".qs-guide") ||
+    candidate.closest?.(".qs-status") ||
+    candidate.classList?.contains("qs-ovl") ||
+    candidate.classList?.contains("qs-highlighter")
+  );
+}
+
+function isSignificantSnapCandidate(el) {
+  const r = el.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  if (r.width < 36 || r.height < 36) return false;
+  if (r.top < -1 || r.left < -1 || r.bottom > vh + 1 || r.right > vw + 1)
+    return false;
+
+  const tagName = el.tagName.toUpperCase();
+  if (tagName === "BODY" || tagName === "HTML") return false;
+
+  const isMedia = [
+    "IMG",
+    "VIDEO",
+    "SVG",
+    "CANVAS",
+    "IFRAME",
+    "EMBED",
+    "OBJECT",
+  ].includes(tagName);
+  const isInteractive = ["INPUT", "TEXTAREA", "SELECT", "BUTTON", "A"].includes(
+    tagName,
+  );
+
+  if (!isMedia && (r.width > vw * 0.96 || r.height > vh * 0.96)) return false;
+
+  const style = window.getComputedStyle(el);
+  if (
+    style.display === "none" ||
+    style.visibility === "hidden" ||
+    Number(style.opacity) === 0
+  )
+    return false;
+
+  if (isMedia || isInteractive) return true;
+
+  const hasBgImage = style.backgroundImage !== "none";
+  const hasBgColor =
+    style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
+    style.backgroundColor !== "transparent";
+  const hasBorder =
+    style.borderWidth !== "0px" &&
+    style.borderStyle !== "none" &&
+    style.borderColor !== "transparent";
+  const hasBoxShadow = style.boxShadow !== "none";
+  const text = el.innerText ? el.innerText.trim() : "";
+
+  if (
+    r.width > 300 &&
+    r.height > 300 &&
+    !hasBorder &&
+    !hasBgImage &&
+    !hasBoxShadow
+  )
+    return text.length >= 10;
+
+  return (
+    hasBgImage || hasBgColor || hasBorder || hasBoxShadow || text.length > 0
+  );
+}
+
+function findSnapRect(x, y) {
+  let elements = [];
+  try {
+    elements = document.elementsFromPoint(x, y);
+  } catch (e) {
+    console.warn("SwiftSelect: elementsFromPoint failed", e);
+    return null;
+  }
+
+  for (const candidate of elements) {
+    if (!isExtensionUi(candidate) && isSignificantSnapCandidate(candidate)) {
+      return candidate.getBoundingClientRect();
+    }
+  }
+
+  return null;
+}
+
+function rectContainsPoint(r, x, y) {
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+
+function isNearlySameRect(a, b) {
+  return (
+    Math.abs(a.left - b.left) < 2 &&
+    Math.abs(a.top - b.top) < 2 &&
+    Math.abs(a.width - b.width) < 2 &&
+    Math.abs(a.height - b.height) < 2
+  );
+}
+
+function stabilizeSnapRect(nextRect, x, y) {
+  if (!highlightedRect || !nextRect) return nextRect;
+  if (isNearlySameRect(highlightedRect, nextRect)) return highlightedRect;
+
+  const currentArea = highlightedRect.width * highlightedRect.height;
+  const nextArea = nextRect.width * nextRect.height;
+
+  if (
+    rectContainsPoint(highlightedRect, x, y) &&
+    currentArea > nextArea * 1.7
+  )
+    return highlightedRect;
+
+  return nextRect;
+}
+
+function updateSnapAt(x, y) {
+  snapPointer = { x, y };
+
+  if (snapFrameId) return;
+  snapFrameId = requestAnimationFrame(() => {
+    snapFrameId = null;
+    const r = stabilizeSnapRect(
+      findSnapRect(snapPointer.x, snapPointer.y),
+      snapPointer.x,
+      snapPointer.y,
+    );
+
+    if (r) {
+      if (window.SwiftSelect.ui.overlay)
+        window.SwiftSelect.ui.overlay.classList.add("qs-snapping");
+      highlightedRect = r;
+      window.SwiftSelect.ui.updateSelection(r);
+      return;
+    }
+
+    clearSnapState();
+  });
+}
 
 export function init() {
   if (initialized) return;
@@ -59,6 +231,7 @@ export function onPointerDown(e) {
 export function onPointerMove(e) {
   const x = e.clientX;
   const y = e.clientY;
+  snapPointer = { x, y };
 
   if (dragging && isSpacePressed) {
     if (!isMoving) isMoving = true;
@@ -82,148 +255,17 @@ export function onPointerMove(e) {
   }
 
   if (!dragging) {
-    if (window.SwiftSelect.ui.box)
-      window.SwiftSelect.ui.box.style.display = "none";
-    if (snapTimer) clearTimeout(snapTimer);
-
     const isSnapping = e.ctrlKey || e.metaKey;
     if (!isSnapping) {
-      if (window.SwiftSelect.ui.highlighterEl)
-        window.SwiftSelect.ui.highlighterEl.style.display = "none";
-      highlightedRect = null;
-      if (window.SwiftSelect.ui.hudEl)
-        window.SwiftSelect.ui.hudEl.style.display = "none";
+      clearSnapState();
       return;
     }
 
-    const now = Date.now();
-    if (now - lastSnapTime < 100) return;
-    lastSnapTime = now;
-
-    if (snapTimer) {
-      clearTimeout(snapTimer);
-      snapTimer = null;
-    }
-
-    const runSnap = () => {
-      let elements = [];
-      try {
-        elements = document.elementsFromPoint(x, y);
-      } catch (e) {
-        console.warn("SwiftSelect: elementsFromPoint failed", e);
-        return;
-      }
-      let bestCandidate = null;
-
-      const isSignificant = (el) => {
-        const r = el.getBoundingClientRect();
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-
-        if (r.width < 50 || r.height < 50) return false;
-        if (r.top < -1 || r.left < -1 || r.bottom > vh + 1 || r.right > vw + 1)
-          return false;
-
-        const tagName = el.tagName.toUpperCase();
-        if (tagName === "BODY" || tagName === "HTML") return false;
-
-        const isMedia = [
-          "IMG",
-          "VIDEO",
-          "SVG",
-          "CANVAS",
-          "IFRAME",
-          "EMBED",
-          "OBJECT",
-        ].includes(tagName);
-        const isInteractive = [
-          "INPUT",
-          "TEXTAREA",
-          "SELECT",
-          "BUTTON",
-          "A",
-        ].includes(tagName);
-
-        if (!isMedia) {
-          if (r.width > vw * 0.95 || r.height > vh * 0.95) return false;
-        }
-
-        const style = window.getComputedStyle(el);
-        if (
-          style.display === "none" ||
-          style.visibility === "hidden" ||
-          style.opacity === "0"
-        )
-          return false;
-
-        if (isMedia || isInteractive) return true;
-
-        const hasBgImage = style.backgroundImage !== "none";
-        const hasBgColor =
-          style.backgroundColor !== "rgba(0, 0, 0, 0)" &&
-          style.backgroundColor !== "transparent";
-        const hasBorder =
-          style.borderWidth !== "0px" &&
-          style.borderStyle !== "none" &&
-          style.borderColor !== "transparent";
-        const hasBoxShadow = style.boxShadow !== "none";
-
-        if (r.width > 300 && r.height > 300) {
-          if (!hasBorder && !hasBgImage && !hasBoxShadow) {
-            const text = el.innerText ? el.innerText.trim() : "";
-            if (text.length < 10) return false;
-          }
-        }
-
-        if (hasBgImage || hasBgColor || hasBorder || hasBoxShadow) return true;
-        if (el.innerText && el.innerText.trim().length > 0) return true;
-        return false;
-      };
-
-      for (const candidate of elements) {
-        const isExtensionUi =
-          candidate === window.SwiftSelect.ui.guideHost ||
-          candidate === window.SwiftSelect.ui.statusHost ||
-          candidate === window.SwiftSelect.ui.overlayHost ||
-          candidate === window.SwiftSelect.ui.highlighterHost ||
-          candidate.closest?.(".qs-guide") ||
-          candidate.closest?.(".qs-status") ||
-          candidate.classList?.contains("qs-ovl");
-
-        if (!isExtensionUi) {
-          if (isSignificant(candidate)) {
-            bestCandidate = candidate;
-            break;
-          }
-        }
-      }
-
-      if (bestCandidate && window.SwiftSelect.ui.highlighterEl) {
-        const r = bestCandidate.getBoundingClientRect();
-        window.SwiftSelect.ui.highlighterEl.style.display = "block";
-        window.SwiftSelect.ui.highlighterEl.style.left = r.left + "px";
-        window.SwiftSelect.ui.highlighterEl.style.top = r.top + "px";
-        window.SwiftSelect.ui.highlighterEl.style.width = r.width + "px";
-        window.SwiftSelect.ui.highlighterEl.style.height = r.height + "px";
-        highlightedRect = r;
-        window.SwiftSelect.ui.updateSelection(r);
-      } else {
-        if (window.SwiftSelect.ui.highlighterEl)
-          window.SwiftSelect.ui.highlighterEl.style.display = "none";
-        highlightedRect = null;
-        if (window.SwiftSelect.ui.hudEl)
-          window.SwiftSelect.ui.hudEl.style.display = "none";
-      }
-    };
-
-    runSnap();
-    snapTimer = setTimeout(runSnap, 200);
+    updateSnapAt(x, y);
     return;
   }
 
-  if (window.SwiftSelect.ui.highlighterEl)
-    window.SwiftSelect.ui.highlighterEl.style.display = "none";
-  highlightedRect = null;
+  clearSnapState({ clearSelection: false });
   if (window.SwiftSelect.ui.box)
     window.SwiftSelect.ui.box.style.display = "block";
 
@@ -265,10 +307,11 @@ export function onPointerUp(e) {
 
   if (rect.width < 5 || rect.height < 5) {
     if (highlightedRect) {
-      captureAndCrop(highlightedRect).finally(() => {
+      const snapRect = highlightedRect;
+      captureAndCrop(snapRect).finally(() => {
         cleanup();
         window.SwiftSelect.ui.cleanup();
-        window.SwiftSelect.ui.triggerFlash(highlightedRect);
+        window.SwiftSelect.ui.triggerFlash(snapRect);
         window.SwiftSelect.ui.setStatus("Copied to clipboard", 5000, "success");
       });
       return;
@@ -307,12 +350,18 @@ export function onKeyDown(e) {
     isSpacePressed = true;
     if (dragging) e.preventDefault();
   }
+  if (!dragging && (e.key === "Control" || e.key === "Meta")) {
+    updateSnapAt(snapPointer.x, snapPointer.y);
+  }
 }
 
 export function onKeyUp(e) {
   if (e.code === "Space") {
     isSpacePressed = false;
     isMoving = false;
+  }
+  if (e.key === "Control" || e.key === "Meta") {
+    clearSnapState({ clearSelection: !dragging });
   }
 }
 
@@ -385,6 +434,7 @@ export function removeListeners() {
 export function cleanup() {
   dragging = false;
   isMoving = false;
+  clearSnapState();
   window.SwiftSelect.ui.setSelecting(false);
   removeListeners();
 }

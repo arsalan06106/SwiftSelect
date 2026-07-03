@@ -27,6 +27,7 @@ export let guideEl = null;
 export let highlighterEl = null;
 export let hudEl = null;
 export let curtains = [];
+export let snapBlurPanels = [];
 export let overlayShadow = null;
 export let guideShadow = null;
 export let freezeBg = null;
@@ -243,6 +244,15 @@ export async function ensureUi() {
     overlay.appendChild(c);
     curtains.push(c);
 
+    snapBlurPanels = [];
+    for (let i = 0; i < 4; i++) {
+      const panel = document.createElement("div");
+      panel.className = "qs-snap-blur-panel";
+      panel.style.zIndex = "2";
+      overlay.appendChild(panel);
+      snapBlurPanels.push(panel);
+    }
+
     box = document.createElement("div");
     box.className = "qs-box";
     overlay.appendChild(box);
@@ -414,10 +424,24 @@ export function setSelecting(isSelecting) {
   if (isSelecting) {
     overlay.classList.add("qs-selecting");
   } else {
+    // Cancel any pending animation frames FIRST to prevent stale callbacks
+    // from re-showing the HUD after we hide it
+    if (updateFrameId) {
+      cancelAnimationFrame(updateFrameId);
+      updateFrameId = null;
+    }
+    isUpdating = false;
+    pendingRect = null;
+    lastHudText = "";
     overlay.classList.remove("qs-selecting");
     curtains.forEach((c) => (c.style.display = "none"));
+    snapBlurPanels.forEach((panel) => (panel.style.display = "none"));
     if (box) box.style.display = "none";
-    if (hudEl) hudEl.style.display = "none";
+    if (hudEl) {
+      hudEl.style.display = "none";
+      // Remove the animation so it won't replay on accidental re-show
+      hudEl.style.animation = "none";
+    }
   }
 }
 
@@ -550,6 +574,16 @@ export function updateSelection(rect) {
     isUpdating = false;
     const r = pendingRect;
     if (!r || !box || !hudEl) return;
+    const canRenderSelection =
+      overlay.classList.contains("qs-selecting") ||
+      overlay.classList.contains("qs-snapping");
+    if (!canRenderSelection) {
+      box.style.display = "none";
+      hudEl.style.display = "none";
+      curtains.forEach((c) => (c.style.display = "none"));
+      snapBlurPanels.forEach((panel) => (panel.style.display = "none"));
+      return;
+    }
 
     const x1 = r.left;
     const y1 = r.top;
@@ -561,6 +595,7 @@ export function updateSelection(rect) {
       box.style.display = "none";
       hudEl.style.display = "none";
       curtains.forEach((c) => (c.style.display = "none"));
+      snapBlurPanels.forEach((panel) => (panel.style.display = "none"));
       return;
     }
 
@@ -584,6 +619,8 @@ export function updateSelection(rect) {
       lastHudText = hudText;
     }
     hudEl.style.display = "block";
+    // Restore animation for fresh appearances (e.g. new drag)
+    hudEl.style.animation = "";
     hudEl.style.transform = `translate3d(${hudLeft}px, ${hudTop}px, 0)`;
 
     if (curtains && curtains.length === 1) {
@@ -592,6 +629,30 @@ export function updateSelection(rect) {
       curtain.style.width = r.width + "px";
       curtain.style.height = r.height + "px";
       curtain.style.transform = `translate3d(${x1 - 4000}px, ${y1 - 4000}px, 0)`;
+    }
+
+    if (snapBlurPanels && snapBlurPanels.length === 4) {
+      const [topPanel, rightPanel, bottomPanel, leftPanel] = snapBlurPanels;
+
+      topPanel.style.display = "block";
+      topPanel.style.transform = "translate3d(0, 0, 0)";
+      topPanel.style.width = window.innerWidth + "px";
+      topPanel.style.height = Math.max(0, y1) + "px";
+
+      rightPanel.style.display = "block";
+      rightPanel.style.transform = `translate3d(${x2}px, ${y1}px, 0)`;
+      rightPanel.style.width = Math.max(0, window.innerWidth - x2) + "px";
+      rightPanel.style.height = Math.max(0, r.height) + "px";
+
+      bottomPanel.style.display = "block";
+      bottomPanel.style.transform = `translate3d(0, ${y2}px, 0)`;
+      bottomPanel.style.width = window.innerWidth + "px";
+      bottomPanel.style.height = Math.max(0, window.innerHeight - y2) + "px";
+
+      leftPanel.style.display = "block";
+      leftPanel.style.transform = `translate3d(0, ${y1}px, 0)`;
+      leftPanel.style.width = Math.max(0, x1) + "px";
+      leftPanel.style.height = Math.max(0, r.height) + "px";
     }
   });
 }
@@ -675,6 +736,7 @@ export function cleanup() {
   freezeFrameDataUrl = null;
   freezeFramePromise = null;
   curtains = [];
+  snapBlurPanels = [];
 
   if (highlighterHost && highlighterHost.parentNode)
     highlighterHost.parentNode.removeChild(highlighterHost);

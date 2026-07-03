@@ -39,7 +39,23 @@
   contain: layout size style;
   transition: none !important;
   background-color: transparent !important;
-  border-color: rgba(0, 0, 0, 0.45);
+  border-color: transparent;
+}
+
+.qs-snap-blur-panel {
+  all: initial;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  pointer-events: none;
+  box-sizing: border-box;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform-origin: 0 0;
+  will-change: transform, width, height;
+  contain: layout size style;
 }
 
 /* Selection Box */
@@ -67,34 +83,24 @@
 .qs-highlighter {
   all: initial;
   position: absolute;
-  /* Dashed Border Trick: Use outline for second color? Or box-shadow? */
-  /* Best: dashed white border with thick black box-shadow/outline to make it pop */
-  border: 2px dashed #ffffff;
+  top: 0;
+  left: 0;
+  border: 2px solid #ffffff;
   box-shadow:
     0 0 0 2px #1f1f1f,
-    0 4px 12px rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
+    0 4px 14px rgba(0, 0, 0, 0.22);
+  border-radius: 8px;
   pointer-events: none;
   box-sizing: border-box;
   z-index: 2147483646;
   display: none;
-
-  /* Subtle dark tint inside to confirm selection area */
-  background: rgba(31, 31, 31, 0.1);
-
-  /* Animation: Subtle scale */
-  animation: qs-fade-in 0.15s ease-out forwards;
-}
-
-@keyframes qs-fade-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  background: rgba(255, 255, 255, 0.08);
+  transform: translate3d(0, 0, 0);
+  will-change: transform, width, height;
+  transition:
+    transform 70ms linear,
+    width 70ms linear,
+    height 70ms linear;
 }
 
 /* Main Menu Container */
@@ -416,7 +422,7 @@
 
 /* Overlay */
 .qs-ovl {
-  background: rgba(0, 0, 0, 0.02);
+  background: transparent;
 }
 
 /* Selection Box */
@@ -428,6 +434,7 @@
     0 8px 18px rgba(0, 0, 0, 0.15),
     0 3px 8px rgba(0, 0, 0, 0.1) !important;
   background: transparent;
+  background-color: transparent !important;
   border-radius: 8px;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -437,22 +444,22 @@
 
 /* Main Menu */
 .qs-guide {
-  color: #1f1f1f;
-  background: #d6d6d6;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  color: var(--qs-standard-text, #1f1f1f);
+  background: var(--qs-standard-bg, #f8f9fa);
+  box-shadow: var(--qs-standard-shadow, 0 2px 6px 2px rgba(60, 64, 67, 0.15), 0 1px 2px 0 rgba(60, 64, 67, 0.3));
 }
 
 /* Buttons (Shared Light) */
 .qs-guide-btn {
-  color: #1f1f1f;
-  border-color: #1f1f1f;
+  color: var(--qs-standard-text, #1f1f1f);
+  border-color: var(--qs-standard-border, #1f1f1f);
 }
 
 /* Button Hover (Shared Light) */
 .qs-guide-btn:hover {
-  background: #1f1f1f;
-  color: #ffffff;
-  border-color: #1f1f1f;
+  background: var(--qs-standard-fill, #1f1f1f);
+  color: var(--qs-standard-fill-text, #ffffff);
+  border-color: var(--qs-standard-fill, #1f1f1f);
   /* box-shadow removed by request */
 }
 
@@ -463,15 +470,15 @@
 
 /* Download Button (Right) - Initial Inverse State */
 .qs-segmented .qs-guide-btn:last-child {
-  background: #1f1f1f;
-  color: #ffffff;
-  border-color: #1f1f1f;
+  background: var(--qs-standard-fill, #1f1f1f);
+  color: var(--qs-standard-fill-text, #ffffff);
+  border-color: var(--qs-standard-fill, #1f1f1f);
 }
 /* Download Button Hover - Inverts back to Menu Background */
 .qs-segmented .qs-guide-btn:last-child:hover {
-  background: #d6d6d6 !important;
-  color: #1f1f1f !important;
-  border-color: #1f1f1f !important;
+  background: var(--qs-standard-bg-hover, #f0f1f3) !important;
+  color: var(--qs-standard-text, #1f1f1f) !important;
+  border-color: var(--qs-standard-fill, #1f1f1f) !important;
 }
 .qs-segmented .qs-guide-btn:last-child:active {
   background: #000000 !important;
@@ -481,13 +488,13 @@
 /* Full Page Button specific override needed? 
    No, it follows shared light logic perfectly now without !important */
 .qs-status {
-  background: #d6d6d6; /* Match Menu BG */
-  color: #1f1f1f; /* Match Menu Text */
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); /* Match Menu Shadow */
+  background: var(--qs-standard-bg, #f8f9fa); /* Match Menu BG */
+  color: var(--qs-standard-text, #1f1f1f); /* Match Menu Text */
+  box-shadow: var(--qs-standard-shadow, 0 2px 6px 2px rgba(60, 64, 67, 0.15), 0 1px 2px 0 rgba(60, 64, 67, 0.3)); /* Match Menu Shadow */
 }
 .qs-status-icon {
   background: transparent;
-  color: #1f1f1f;
+  color: var(--qs-standard-text, #1f1f1f);
 }
 
 /* Ensure SVGs in status icon use currentColor by default (Filled icons like Info/Error) */
@@ -505,8 +512,8 @@
 
 .qs-status.qs-success,
 .qs-status.qs-saved {
-  background: #d6d6d6;
-  color: #1f1f1f;
+  background: var(--qs-standard-bg, #f8f9fa);
+  color: var(--qs-standard-text, #1f1f1f);
 }
 .qs-status.qs-success .qs-status-icon,
 .qs-status.qs-saved .qs-status-icon {
@@ -514,8 +521,8 @@
   /* color: #ffffff; REMOVED to allow inheritance */
 }
 .qs-status.qs-error {
-  background: #d6d6d6;
-  color: #1f1f1f;
+  background: var(--qs-standard-bg, #f8f9fa);
+  color: var(--qs-standard-text, #1f1f1f);
 }
 .qs-status.qs-error .qs-status-icon {
   background: transparent;
@@ -523,14 +530,14 @@
 }
 
 .qs-save-btn {
-  background: #1f1f1f;
-  color: #ffffff;
+  background: var(--qs-standard-fill, #1f1f1f);
+  color: var(--qs-standard-fill-text, #ffffff);
   border: 2px solid transparent;
 }
 .qs-save-btn:hover {
-  background: #d6d6d6;
-  color: #1f1f1f;
-  border: 2px solid #1f1f1f;
+  background: var(--qs-standard-bg-hover, #f0f1f3);
+  color: var(--qs-standard-text, #1f1f1f);
+  border: 2px solid var(--qs-standard-fill, #1f1f1f);
 }
 .qs-save-btn:active {
   transform: scale(0.96) translateY(1px);
@@ -543,27 +550,27 @@
 
 .qs-theme-dark.qs-guide,
 .qs-theme-dark .qs-guide {
-  background: #1a1a1a;
+  background: var(--qs-standard-bg, #1a1a1a);
   border: 0px solid transparent; /* Remove physical border */
-  color: #ffffff;
-  /* Box Shadow: Outside Border (2px) + Original Drop Shadow */
+  color: var(--qs-standard-text, #ffffff);
+  /* Box Shadow: Outside Border (1px) + Google-style Drop Shadow */
   box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.25),
-    0 4px 20px rgba(0, 0, 0, 0.4);
+    0 0 0 1px var(--qs-standard-border-soft, rgba(255, 255, 255, 0.12)),
+    var(--qs-standard-shadow, 0 8px 24px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25));
 }
 
 /* Buttons (Dark) */
 .qs-theme-dark .qs-guide-btn {
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.8);
+  color: var(--qs-standard-text, #ffffff);
+  border-color: var(--qs-standard-border, rgba(255, 255, 255, 0.8));
   background: transparent;
 }
 
 /* Button Hover (Dark) - Invert to White (EXCLUDE TOGGLE) */
 .qs-theme-dark .qs-guide-btn:not(.qs-theme-toggle):hover {
-  background: #ffffff !important;
-  color: #1a1a1a !important;
-  border-color: #ffffff !important;
+  background: var(--qs-standard-fill, #ffffff) !important;
+  color: var(--qs-standard-fill-text, #1a1a1a) !important;
+  border-color: var(--qs-standard-fill, #ffffff) !important;
   /* box-shadow removed by request */
 }
 .qs-theme-dark .qs-guide-btn:not(.qs-theme-toggle):active {
@@ -573,15 +580,15 @@
 
 /* Download Button (Dark) - Initial Inverse State (White) */
 .qs-theme-dark .qs-segmented .qs-guide-btn:last-child {
-  background: #ffffff;
-  color: #1a1a1a;
-  border-color: #ffffff;
+  background: var(--qs-standard-fill, #ffffff);
+  color: var(--qs-standard-fill-text, #1a1a1a);
+  border-color: var(--qs-standard-fill, #ffffff);
 }
 /* Download Button Hover (Dark) - Invert back to Dark */
 .qs-theme-dark .qs-segmented .qs-guide-btn:last-child:hover {
-  background: #1a1a1a !important;
-  color: #ffffff !important;
-  border-color: #ffffff !important;
+  background: var(--qs-standard-bg, #1a1a1a) !important;
+  color: var(--qs-standard-text, #ffffff) !important;
+  border-color: var(--qs-standard-fill, #ffffff) !important;
 }
 .qs-theme-dark .qs-segmented .qs-guide-btn:last-child:active {
   background: #cccccc !important;
@@ -591,20 +598,20 @@
 /* Fix Specificity for Standalone Buttons (like Full Page) in Dark Mode 
    Ensure they don't get stuck with light theme if there's any bleed */
 .qs-theme-dark .qs-guide-buttons > .qs-guide-btn {
-  border-color: rgba(255, 255, 255, 0.8);
-  color: #ffffff;
+  border-color: var(--qs-standard-border, rgba(255, 255, 255, 0.8));
+  color: var(--qs-standard-text, #ffffff);
 }
 .qs-theme-dark .qs-guide-buttons > .qs-guide-btn:hover {
-  background: #ffffff !important;
-  color: #1a1a1a !important;
-  border-color: #ffffff !important;
+  background: var(--qs-standard-fill, #ffffff) !important;
+  color: var(--qs-standard-fill-text, #1a1a1a) !important;
+  border-color: var(--qs-standard-fill, #ffffff) !important;
 }
 
 /* Status Toasts (Dark) */
 .qs-theme-dark.qs-status {
-  background: #1a1a1a;
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  background: var(--qs-standard-bg, #1a1a1a);
+  border: 2px solid var(--qs-standard-border-soft, rgba(255, 255, 255, 0.25));
+  color: var(--qs-standard-text, #ffffff);
 }
 .qs-theme-dark .qs-status-icon {
   background: transparent !important;
@@ -622,14 +629,14 @@
 }
 .qs-theme-dark .qs-save-btn,
 .qs-theme-dark .qs-status.qs-success .qs-save-btn {
-  background: #ffffff !important;
-  color: #1a1a1a !important;
+  background: var(--qs-standard-fill, #ffffff) !important;
+  color: var(--qs-standard-fill-text, #1a1a1a) !important;
 }
 .qs-theme-dark .qs-save-btn:hover,
 .qs-theme-dark .qs-status.qs-success .qs-save-btn:hover {
-  background: #1a1a1a !important;
-  color: #ffffff !important;
-  border: 1px solid #ffffff;
+  background: var(--qs-standard-bg, #1a1a1a) !important;
+  color: var(--qs-standard-text, #ffffff) !important;
+  border: 1px solid var(--qs-standard-fill, #ffffff);
 }
 .qs-theme-dark .qs-save-btn:active,
 .qs-theme-dark .qs-status.qs-success .qs-save-btn:active {
@@ -760,12 +767,12 @@
   transition: none !important;
 }
 
-/* Curtains Blur for Glass Theme — only when NOT actively dragging */
+/* Curtains for Glass Theme */
 .qs-theme-glass .qs-curtain {
-  backdrop-filter: blur(1.6px) !important;
-  -webkit-backdrop-filter: blur(1.6px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   background-color: transparent !important;
-  border-color: rgba(0, 0, 0, 0.1) !important;
+  border-color: transparent !important;
 }
 
 /* Override: disable blur during active drag even for glass */
@@ -774,7 +781,7 @@
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   background-color: transparent !important;
-  border-color: rgba(0, 0, 0, 0.55) !important;
+  border-color: transparent !important;
 }
 
 /* -------------------------------------------
@@ -819,17 +826,25 @@
 /* Performance optimization: Unified 2px Dragging Styles */
 /* LIGHT MODE DRAGGING */
 .qs-selecting .qs-box {
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.65),
+    0 3px 10px rgba(0, 0, 0, 0.28) !important;
   border: 2px solid #1f1f1f !important;
   outline: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 /* DARK MODE DRAGGING */
 .qs-selecting.qs-theme-dark .qs-box,
 .qs-selecting.qs-theme-glass-dark .qs-box {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.7),
+    0 3px 10px rgba(0, 0, 0, 0.32) !important;
   border: 2px solid #e1e1e1 !important;
   outline: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 /* Performance: Kill backdrop-filter on curtains while dragging */
@@ -837,7 +852,35 @@
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   background-color: transparent !important;
-  border-color: rgba(0, 0, 0, 0.55) !important;
+  border-color: transparent !important;
+}
+
+.qs-snapping {
+  background: transparent !important;
+}
+
+.qs-snapping .qs-curtain {
+  display: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.qs-snapping .qs-snap-blur-panel {
+  display: block;
+  background: transparent;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.qs-snapping .qs-box {
+  border: 2px solid #ffffff !important;
+  box-shadow:
+    0 0 0 2px #1f1f1f,
+    0 4px 14px rgba(0, 0, 0, 0.22) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: none !important;
 }
 
 /* DARK VARIANT SELECTION BOX */
@@ -1505,7 +1548,6 @@
 @media (prefers-reduced-motion: reduce) {
   .qs-guide,
   .qs-status,
-  .qs-highlighter,
   .qs-hud,
   .qs-flash,
   .qs-guide-btn:hover .eye-lid,
