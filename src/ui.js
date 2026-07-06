@@ -456,6 +456,12 @@ export function setStatus(msg, timeout = 1500, type = "info", noAnim = false) {
 
   if (hideStatusTimer) clearTimeout(hideStatusTimer);
 
+  const isUpdating = statusEl && statusHost && statusHost.style.display !== "none" && !statusEl.classList.contains("qs-hiding");
+  let oldWidth = 0;
+  if (isUpdating) {
+    oldWidth = statusEl.getBoundingClientRect().width;
+  }
+
   statusEl.className = "qs-status";
   statusEl.classList.remove("qs-hiding");
   if (noAnim) statusEl.classList.add("no-anim");
@@ -542,6 +548,40 @@ export function setStatus(msg, timeout = 1500, type = "info", noAnim = false) {
   statusHost.style.display = "";
   statusEl.style.display = "flex";
   currentStatus = type;
+
+  if (isUpdating) {
+    statusEl.getAnimations().forEach(anim => { if (!anim.animationName) anim.cancel(); });
+    const newWidth = statusEl.getBoundingClientRect().width;
+    statusEl.animate([
+      { width: `${oldWidth}px` },
+      { width: `${newWidth}px` }
+    ], {
+      duration: 350,
+      easing: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+    });
+
+    const textSpan = statusEl.querySelector('span');
+    if (textSpan) {
+      textSpan.animate([
+        { opacity: 0, transform: "translateY(6px) scale(0.6)" },
+        { opacity: 1, transform: "translateY(0) scale(1)" }
+      ], {
+        duration: 350,
+        easing: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      });
+    }
+
+    const icon = statusEl.querySelector('.qs-status-icon');
+    if (icon) {
+      icon.animate([
+        { opacity: 0, transform: "translateY(6px) scale(0.6)" },
+        { opacity: 1, transform: "translateY(0) scale(1)" }
+      ], {
+        duration: 350,
+        easing: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      });
+    }
+  }
 
   if (timeout > 0) {
     hideStatusTimer = setTimeout(() => {

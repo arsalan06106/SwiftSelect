@@ -132,7 +132,7 @@
   white-space: nowrap; /* Never wrap */
 
   transform-origin: center center;
-  animation: liquidExpand 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: liquidExpand 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   opacity: 0;
   will-change: transform, opacity;
 }
@@ -140,7 +140,7 @@
 @keyframes liquidExpand {
   0% {
     opacity: 0;
-    transform: translate3d(0, -6px, 0) scale(0.975);
+    transform: translate3d(0, -12px, 0) scale(0.92);
   }
   100% {
     opacity: 1;
@@ -154,12 +154,12 @@
   }
   100% {
     opacity: 0;
-    transform: translate3d(0, -4px, 0) scale(0.985);
+    transform: translate3d(0, -12px, 0) scale(0.92);
   }
 }
 
 .qs-guide.qs-hiding {
-  animation: liquidCollapse 180ms cubic-bezier(0.4, 0, 1, 1) forwards !important;
+  animation: liquidCollapse 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
   pointer-events: none !important;
 }
 
@@ -322,27 +322,47 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   pointer-events: none;
-  z-index: 2147483648;
   display: flex;
+  box-sizing: border-box;
+  overflow: hidden;
+  white-space: nowrap;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   max-width: 90vw;
-  min-height: 52px;
+  min-height: 76px;
   opacity: 0;
-  animation: liquidSlideUp 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: liquidSlideUp 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   will-change: transform, opacity;
+  transition: background-color 300ms ease, border-color 300ms ease;
 }
 
 @keyframes liquidSlideUp {
   0% {
     opacity: 0;
-    transform: translate3d(-50%, 10px, 0) scale(0.98);
+    transform: translate3d(-50%, 20px, 0) scale(0.9);
   }
   100% {
     opacity: 1;
     transform: translate3d(-50%, 0, 0) scale(1);
   }
 }
+
+.qs-status:not(.qs-hiding):not(.no-anim) > * {
+  animation: qsStatusPop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes qsStatusPop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes liquidSlideDown {
   0% {
     opacity: 1;
@@ -350,12 +370,12 @@
   }
   100% {
     opacity: 0;
-    transform: translate3d(-50%, 8px, 0) scale(0.985);
+    transform: translate3d(-50%, 20px, 0) scale(0.9);
   }
 }
 
 .qs-status.qs-hiding {
-  animation: liquidSlideDown 180ms cubic-bezier(0.4, 0, 1, 1) forwards !important;
+  animation: liquidSlideDown 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
   pointer-events: none !important;
 }
 .qs-status.no-anim {
@@ -363,6 +383,18 @@
   transition: none !important;
   opacity: 1 !important;
   transform: translate(-50%, 0) !important;
+}
+
+.qs-status span {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.qs-status-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Variables for Standalone SVG Icons (No Container Background) */
@@ -870,6 +902,7 @@
   background: transparent;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  transition: all 200ms cubic-bezier(0.34, 1.2, 0.64, 1) !important;
 }
 
 .qs-snapping .qs-box {
@@ -880,7 +913,11 @@
   background: rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  transition: none !important;
+  transition: all 200ms cubic-bezier(0.34, 1.2, 0.64, 1) !important;
+}
+
+.qs-snapping .qs-hud {
+  transition: transform 200ms cubic-bezier(0.34, 1.2, 0.64, 1) !important;
 }
 
 /* DARK VARIANT SELECTION BOX */
@@ -1187,7 +1224,7 @@
   transform: translate3d(0, 0, 0);
   will-change: transform;
   transform-origin: 0 0;
-  animation: hudMaterialize 120ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: hudMaterialize 240ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .qs-theme-dark.qs-hud {
   background: #1a1a1a;
@@ -1284,10 +1321,13 @@
 @keyframes hudMaterialize {
   0% {
     opacity: 0;
-    transform: translate3d(0, 3px, 0) scale(0.985);
+    scale: 0.92;
+    margin-top: 8px;
   }
   100% {
     opacity: 1;
+    scale: 1;
+    margin-top: 0;
   }
 }
 @keyframes spin {
