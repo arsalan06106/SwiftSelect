@@ -21,7 +21,11 @@ The fastest screenshot tool for Chrome. Select a region, grab the viewport, or s
 ---
 
 <br>
+<div align="center">
+  <img src="https://lh3.googleusercontent.com/OF283NjktCBE8qv5Cin-vxiSi9k__jc0Zxb4aP7vu_popwnfNAOYDVqa6AE3LhnkNHAECGikszOVuJEyrRPjn0Ebzw=s1280-w1280-h800" alt="SwiftSelect Interface Preview" width="100%">
+</div>
 
+<br>
 ## The Mechanics of SwiftSelect
 
 Most screenshot extensions are slow, cluttered, or demand unnecessary sign-ups. SwiftSelect does exactly three things and executes them instantly.
@@ -35,7 +39,11 @@ Most screenshot extensions are slow, cluttered, or demand unnecessary sign-ups. 
 Full-page capture reliably processes complex single-page applications, bypassing sticky headers and fixed elements.
 
 <br>
+<div align="center">
+  <img src="https://lh3.googleusercontent.com/8ZZpH-oeIqJv8pwRuW8rbKg6f2wZWcuSdkT7SHDSOwdpAD-pnGfiGkgDjOSbMGSPVySgRN64_7c48enz_tilZoUnkA=s1280-w1280-h800" alt="SwiftSelect Shortcuts Overview" width="100%">
+</div>
 
+<br>
 ## Shortcuts
 
 Every action has a dedicated shortcut to eliminate toolbar hunting.
